@@ -1,0 +1,5279 @@
+\[\fbox{$\left(\frac1{\bar X}-\frac{1.96}{\sqrt{n}\bar X}, \frac1{\bar X}+\frac{1.96}{\sqrt{n}\bar X}\right)$}\]
+
+\newcommand{\abs}[1]{\left| #1 \right|}
+\newcommand{\barr}[2]{\left\{
+  \begin{array}{#1}#2\end{array}
+\right.}
+\newcommand{\bkarr}[2]{\left[
+  \begin{array}{#1}#2\end{array}
+\right]}
+\newcommand{\hwsec}[1]{\noindent\textbf{#1}}
+\newcommand{\simplot}[1]{\begin{center}
+  \includegraphics[width=0.7\textwidth]{#1}
+\end{center}}
+
+System of equations as matrix multiplication:
+\begin{minted}{matlabsession}
+>> format compact;
+>> format long;
+>> a = sqrt(2) / 2;
+>> A = sparse([ -a 0 0 1 a  0 0 0 0 0 0 0 0 0 0 0 0
+        ;  a 0 1 0 a  0 0 0 0 0 0 0 0 0 0 0 0
+        % ^ junction 2
+        ;  0 1 0 0 0 -1 0 0 0 0 0 0 0 0 0 0 0
+        ;  0 0 1 0 0  0 0 0 0 0 0 0 0 0 0 0 0 % inverted
+        % ^ junction 3
+        ;  0 0 0 -1 0 0 0 1 0 0 0 0 0 0 0 0 0
+        ;  0 0 0  0 0 0 1 0 0 0 0 0 0 0 0 0 0
+        % ^ junction 4
+        ; 0 0 0 0 -a -1 0 0 a 1 0 0 0 0 0 0 0
+        ; 0 0 0 0  a  0 1 0 a 0 0 0 0 0 0 0 0 % inverted
+        % ^ junction 5
+        ; 0 0 0 0 0 0 0 -1 -a 0 0 1 a 0 0 0 0
+        ; 0 0 0 0 0 0 0  0  a 0 1 0 a 0 0 0 0
+        % ^ junction 6
+        ; 0 0 0 0 0 0 0  0 0 -1 0 0 0 1 0 0 0
+        ; 0 0 0 0 0 0 0  0 0  0 1 0 0 0 0 0 0
+        % ^ junction 7
+        ; 0 0 0 0 0 0 0  0 0 0 0 -1 0 0 0 a 0
+        ; 0 0 0 0 0 0 0  0 0 0 0  0 0 0 1 a 0
+        % ^ junction 8
+        ; 0 0 0 0 0 0 0 0 0 0 0  0 a 1 0 0 -1
+        ; 0 0 0 0 0 0 0 0 0 0 0  0 a 0 1 0  0
+        % ^ junction 9
+        ; 0 0 0 0 0 0 0 0 0 0 0  0 0 0 0 a 1
+        ]);
+>> b = @(F) sparse(
+      [0 0 0 F(1) 0 0 0 F(2) 0 0 0 F(3) 0 0 0 F(4) 0])';
+\end{minted}
+
+\begin{longtable}[]{@{}cccccc@{}}
+\toprule
+& O & A & B & AB & \(\chi^2\) \\
+\midrule
+\endhead
+Rh.positive & 73.20 & 89.47 & 55.31 & 26.03 & 1.021 \\
+Rh.negative & 16.80 & 20.53 & 12.69 & 5.97 & 4.448 \\
+\bottomrule
+\end{longtable}
+
+\begin{align*}
+f(\mu,\sigma^2\mid x)
+&=f(\mu, \sigma^2)f(x\mid \mu, \sigma^2)\\
+&=\sigma^{-n-2}e^{-\frac1{2\sigma^2}\sum_i(X_i-\bar X)^2+\sum_i(\bar X-\mu)^2}\\
+&=\sigma^{-n-2}e^{-\frac{(n-1)s^2}{2\sigma^2}+n(\bar X-\mu)^2}
+\end{align*}
+
+\hwsec{(ii).}
+Function:
+\[f(x)=\frac12+\frac{x^2}4-x\sin{x}-\frac{\cos{2x}}2\]
+Derivative:
+\[f'(x) = \frac x2 - \sin x + \sin{2 x} - x\cos x\]
+Matlab script for Newton's method:
+\begin{minted}{matlabsession}
+>> format compact;
+>> format long e;
+>> f = @(x) 1 / 2 + x^2 / 4 - x * sin(x) - cos(2 * x) / 2;
+>> df = @(x) x / 2 - sin(x) + sin(2 * x) - x * cos(x);
+>> mynewton(f, df, pi / 2, 1e-3, 100)
+\end{minted}
+Result:
+\begin{minted}{text}
+x = 1.5708
+x = 1.7854
+x = 1.84456
+x = 1.87083
+ans =
+     1.870834417688862e+00
+\end{minted}
+
+\noindent\textbf{Help desk.}
+We plot the fitted polynomial in a finer domain \texttt{0:0.1:15}:
+\begin{minted}{matlabsession}
+>> format compact;
+>> dom = [0:5:15]
+>> y = [3 8 -2 9]
+>> x = [0:0.1:15]
+>> plot(x, polyval(polyfit(dom, y, 3), x))
+\end{minted}
+Result figure:
+\begin{center}
+\includegraphics[width=0.7\textwidth]{2.3}
+\end{center}
+
+  -1.6667e-01
+  -2.8595e-02
+  -8.9101e-03
+  -3.0591e-03
+  -1.0738e-03
+\end{minted}
+The error gets smaller and smaller when $n$ gets large, but not much.
+
+Comments: it is very struggling to align these matrices,
+because they are very large. It would be nice if we have a graphical editor
+for these linear equations.
+I have inverted the second equation for \circled{3} and \circled{5}
+(multiply both sides by $-1$) for convenience.
+
+\subsection{Error Propagation}\index{error propagation}
+
+\section{Conclusion}
+
+For \texttt{0.05:0.05:1}, we use the following matlab script:
+\begin{minted}{matlabsession}
+>> format compact;
+>> format long;
+>> c = 0.05:0.05:1;
+>> A = vander(c);
+>> b = A * ones(size(c'));
+>> naiv_gauss(A, b)
+>> A \ b
+\end{minted}
+Answer from matlab:
+\begin{minted}{text}
+ans =
+   1.0e+15 *
+   0.100260367617011
+  -0.547611736692488
+   1.322086302655506
+  -1.861303854966565
+   1.697314314649383
+  -1.052455338465164
+   0.452613654373408
+  -0.134745815870952
+   0.027010370505822
+  -0.003364454050715
+   0.000193583684468
+   0.000007778825174
+  -0.000002060199317
+   0.000000130012968
+  -0.000000003878228
+   0.000000000134212
+  -0.000000000006845
+   0.000000000000244
+  -0.000000000000009
+   0.000000000000001
+Warning: Matrix is close to singular or badly scaled.
+Results may be inaccurate. RCOND =  5.882890e-18. 
+ 
+ans =
+   1.000124747335887
+   0.998965197849302
+   1.003791255212411
+   0.992141543508981
+   1.009388954354586
+   0.995684476889867
+   0.994051957277281
+   1.014654730622059
+   0.983414871976230
+   1.012579528046927
+   0.993030429478400
+   1.002907983558429
+   0.999077726021763
+   1.000221673914519
+   0.999960147116320
+   1.000005230110332
+   0.999999518677854
+   1.000000029049191
+   0.999999998984420
+   1.000000000015243
+\end{minted}
+Observation:
+The na\"{i}ve version is almost broken,
+while the pivoting version still works (even though the solutions
+has larger errors).
+Also, the pivoting version is capable of detecting these large errors.
+
+Next, content of file \texttt{polyvalue.m}:
+\begin{minted}{matlab}
+function v = polyvalue(a, x, t)
+% input: a= Newton's divided differences
+% x= the points for the data set to interpolate,
+% same as in divdiff.
+% t= the points where the polynomial should be evaluated
+% output: v= value of polynomial at the points in t
+  ax = diag(a);
+  t_size = size(t);
+  [~, x_size] = size(x);
+  v = zeros(t_size) + ax(1);
+  cul = ones(t_size);
+  for i = 2 : x_size
+    cul = cul .* (t - x(i - 1));
+    v = v + ax(i) * cul;
+  end
+end
+\end{minted}
+Script for testing:
+\begin{minted}{matlabsession}
+>> format compact;
+>> x = [-1 1 3 5];
+>> y = [2 -4 6 10];
+>> polyvalue(divdiff(x, y), x, 1:5)
+\end{minted}
+Output from Matlab:
+\begin{minted}{text}
+ans =
+   -4.0000    0.3750    6.0000   10.1250   10.0000
+\end{minted}
+This matches the table we obtained from manual computation.
+% evaluate (2 -3(x +1) + 2(x +1)(x -1)-0.4583(x +1)(x -1)(x -3)) at x in {1,2,3,4,5}
+
+   1
+
+\subsection{Interpolating a Spiral with Natural Cubic Spline}
+Matlab code:
+\begin{minted}{matlabsession}
+>> u = 0:10;
+>> xx = (u / 2 + 1) .* cos(u);
+>> yy = (u / 2 + 1) .* sin(u);
+>> x = cspline(u, xx);
+>> y = cspline(u, yy);
+>> t = 0:0.1:10;
+>> xs = cspline_eval(u, xx, x, t);
+>> plot(t, xs);
+>> hold on;
+>> ys = cspline_eval(u, yy, y, t);
+>> plot(t, ys);
+>> hold on;
+>> plot(xs, ys);
+\end{minted}
+Matlab generated figure:
+\simplot{3.5.png}
+Comments: the spline shakes more and more violently (as the $x$-coordinate increases),
+matches the spiral goes around the larger and larger circle.
+
+\hwsec{(d).} 2nd order Adams-Bashforth-Moulton method.
+Iteration scheme:
+\[x_{n+1}=x_n+\frac{3h\times f(t_n,x_n)}{2}-\frac{h\times f(t_{n-1},x_{n-1})}{2}\]
+Iteration (using $x_1(0.1)=1.1$):
+\begin{align*}
+  x_2(0.2)&=1.1+\frac{3\times0.1\times1}{2}-\frac{0.1}{2}=1.2\\
+  x_3(0.3)&=1.2+\frac{3\times0.1\times(\frac{0.1\times 1.2^2}{2}+1)}{2}-\frac{0.1\times 1.1}{2}=1.3058
+\end{align*}
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\item
+  It is a good choice because \((X\mid H_0)\sim Bin(n,\frac16)\),
+  \((X\mid H_1)\sim Bin(n,\frac13)\). Choosing different hypotheses can
+  cause the distribution of \(X\) to change, so we expect the
+  observation to be .
+\item
+  It's \((X\mid H_0)\sim Bin(30, \frac16)\).
+\item
+  So \(\alpha=P(X\geq10\mid H_0)=1-P(X<10\mid H_0)\), and \(H_0\) tells
+  us \(\theta=\frac16\). So \(\alpha=1-F_{X}(9)\) for
+  \(X\sim Bin(30,\frac16)\).
+\item
+  By (c), when \(X\geq 10\) we reject \(H_0\), so when \(X\leq 9\) we do
+  not reject \(H_0\). So \(\beta=P(X\leq 9\mid H_1)\), and
+  \(H_1:\theta=\frac13\), so \(\beta=F_{X}(9)\) for
+  \(X\sim Bin(30,\frac13)\).
+\item
+  The goal is to make \(\alpha\to 0.05\), so \(1-F_X(k)\to 0.05\), so
+  \(F_X(k)\to 0.95\) for \(X\sim Bin(30, \frac16)\). By the references
+  given, \(k=8\), and \(\alpha=1-F_X(8)=1-0.949=0.051\).
+\item
+  \(\beta=F_X(8)\) for a different \(X\) (not as in (e), but in (d)),
+  and by the references given, \(\beta=0.286\). The power
+  \(\pi=1-\beta=0.714\).
+\item
+  Yes, by using the asymptotic distribution of the parameter \(\theta\),
+  we actually get a continuous distribution, and there is an exact
+  rejection region for \(\alpha=0.05\).
+\end{enumerate}
+
+\hwsec{(b).}
+Take initial guesses $\bar y''=0, \tilde y''=1$.
+The matrix form, where $y_1=\bar y, y_2=\bar y', y_3=\tilde y, y_4=\tilde y'$:
+\[\bkarr{c}{y_1'\\y_2'\\y_3'\\y_4'}=
+\bkarr{c}{y_2\\y_2+2y_1+\cos x\\y_4\\y_4+2y_3+\cos x}\]
+
+The error for $f(x)=\sqrt x$ is:
+\begin{minted}[fontsize=\small]{matlabsession}
+>> quad('sqrt', 0, 1, 1e-9)-table(romberg('sqrt', 0, 1, 5)).Var1(5, 5)
+>> quadl('sqrt', 0, 1, 1e-9)-table(romberg('sqrt', 0, 1, 5)).Var1(5, 5)
+\end{minted}
+Results from Matlab:
+\begin{minted}{text}
+ans =
+
+\hwsec{(b).}
+Matlab script for \texttt{ode45}
+and the Secant iteration:
+\begin{minted}{matlabsession}
+>> format compact;
+>> m = @(x, y) [y(2); -y(2)^2-y(1)+cos(x)^2];
+>> gu1 = [0 1]; ab = [0 pi];
+>> err = 1; niter = 0;
+>> shootN = @(g) ode45(m, ab, [0; g]);
+>> while err > 1e-9 && niter < 100
+>>   [x, y1] = shootN(gu1(1));
+>>   [x, y2] = shootN(gu1(2));
+>>   frac = (gu1(2) - gu1(1)) / (y2(end, 1) - y1(end, 1));
+>>   lam = gu1(2) - y2(end, 1) * frac;
+>>   gu1(1) = gu1(2); gu1(2) = lam;
+>>   err = abs(lam - gu1(1));
+>>   niter = niter + 1;
+>> end
+>> [x, ys] = shootN(lam);
+\end{minted}
+Matlab script to generate figures,
+with a comparison between analytic and numerical solutions:
+\begin{minted}{matlabsession}
+>> plot(x, ys(:, 1), 'o');
+>> hold on;
+>> x = linspace(0, pi, 100);
+>> plot(x, sin(x), '-');
+>> legend('Numerical solution', 'Analytic solution');
+\end{minted}
+Generated plot:
+\simplot{3.png}
+
+\title{ Homework 1}
+\author{ \\ @psu.edu}
+
+\hwsec{(b).} Iteration from $x_0$ to $x_4$:
+\[\begin{array}{rlll}
+x_1&=f(x_0)+x_0&=\exp{(-1.6)}-\cos{(1.6)}+1.6&=1.8311\\
+x_2&=f(x_1)+x_1&=\exp{(-1.8311)}-\cos{(1.8311)}+1.8311&=2.2487\\
+x_3&=f(x_2)+x_2&=\exp{(-2.2487)}-\cos{(2.2487)}+2.2487&=2.9814\\
+x_4&=f(x_3)+x_3&=\exp{(-2.9814)}-\cos{(2.9814)}+2.9814&=4.0193
+\end{array}\]
+Observe that $x_0<x_1<x_2<x_3<x_4$ (monotone), so it probably converges.
+Matlab script:
+\begin{minted}{matlabsession}
+>> format compact;
+>> f = @(x) exp(-x) - cos(x);
+>> x = 1.6;
+>> for i = 1:100, x = f(x) + x; end;
+>> x = f(x) + x
+>> x = f(x) + x
+\end{minted}
+Result:
+\begin{minted}{text}
+x =
+    4.7213
+x =
+    4.7213
+\end{minted}
+Check: $g_1'(4.7213) \approx 0.0089<1$.
+It seems that the iteration indeed converges,
+and the approximated root $r=4.7213$.
+
+\begin{document}
+\maketitle
+\tableofcontents
+\section*{}
+\setcounter{section}{10}
+\newpage
+
+(d) By \(\Delta\) method,
+\(\hat\theta_{MLE}\sim N(\theta, \theta^2/n)=N(\frac{\log2}\lambda,\frac{\log^2 2}{\lambda^2n})\).
+Also
+\(\hat\theta_{MLE}=\frac{\log2}{\hat\lambda_{MLE}}=(\log 2)\bar X\). So:
+
+\newcommand{\abs}[1]{\left| #1 \right|}
+\newcommand{\barr}[2]{\left\{
+  \begin{array}{#1}#2\end{array}
+\right.}
+\newcommand{\bkarr}[2]{\left[
+  \begin{array}{#1}#2\end{array}
+\right]}
+\newcommand{\hwsec}[1]{\noindent\textbf{#1}}
+\newcommand{\simplot}[1]{\begin{center}
+  \includegraphics[width=0.7\textwidth]{#1}
+\end{center}}
+\newcommand{\circled}[1]{\tikz[baseline=(char.base)]{
+  \node[shape=circle,draw,inner sep=2pt] (char) {#1};
+}}
+
+(b) It follows \(t_{n-1}\)-distribution, where \(a=\bar X\),
+\(b^2=\frac{s^2}{n}\) thus \(b=s/\sqrt n\). Therefore, the distribution
+is \(\fbox{$t_{n-1}(\bar X, s/\sqrt n)$}\).
+
+Doubled observation:
+
+\documentclass{amsart}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{amsthm}
+\usepackage{hyperref}
+\usepackage{mathpazo}
+\usepackage{tikz-cd}
+\usetikzlibrary{calc}
+\usetikzlibrary{decorations.pathmorphing}
+% A TikZ style for curved arrows of a fixed height, due to AndréC.
+\tikzset{curve/.style={settings={#1},to path={(\tikztostart)
+    .. controls ($(\tikztostart)!\pv{pos}!(\tikztotarget)!\pv{height}!270:(\tikztotarget)$)
+    and ($(\tikztostart)!1-\pv{pos}!(\tikztotarget)!\pv{height}!270:(\tikztotarget)$)
+    .. (\tikztotarget)\tikztonodes}},
+    settings/.code={\tikzset{quiver/.cd,#1}
+        \def\pv##1{\pgfkeysvalueof{/tikz/quiver/##1}}},
+    quiver/.cd,pos/.initial=0.35,height/.initial=0}
+% TikZ arrowhead/tail styles.
+\tikzset{tail reversed/.code={\pgfsetarrowsstart{tikzcd to}}}
+\tikzset{2tail/.code={\pgfsetarrowsstart{Implies[reversed]}}}
+\tikzset{2tail reversed/.code={\pgfsetarrowsstart{Implies}}}
+% TikZ arrow styles.
+\tikzset{no body/.style={/tikz/dash pattern=on 0 off 1mm}}
+\newtheorem*{remark}{Remark}
+\title{Math 401 Homework 8}
+\author{}
+\email{@psu.edu}
+\begin{document}
+\maketitle
+\tableofcontents
+\section{8.15}
+\subsection{8.15 (1)}
+\begin{enumerate}
+\item (i) $\frac{1+4}{1-4}=-\frac53$.
+\item (ii) $\frac{0+0+9}{0+7}=\frac97$.
+\end{enumerate}
+\subsection{8.15 (2)}
+\begin{enumerate}
+\item (i)
+For $\epsilon>0$, we need to show $|f(x)-2|=|2x-2|<\epsilon$ for $x\in(1-\delta,1)$.
+Simplification gets $x\in(1-\frac\epsilon2,1+\frac\epsilon2)$, so $\delta=\frac\epsilon2$ will make it work.
+\item (ii)
+Similarly $x\in(1-\epsilon,1+\epsilon)$ so $\delta=\epsilon$ will make it work.
+\end{enumerate}
+By 8.4, the limit of $f(x)$ at $1$ is $2$, but $f(1)=1$ so it's not continuous.
+\subsection{8.15 (3)}
+Since $x\not=0$, $f(x)=\frac{x^2+2x}x=x+2$, thus $x\to0$ implies $f(x)\to2$.
+\subsection{8.15 (6)}
+By the def. of limit of functions, take $\epsilon=l$, $|f(x)-l|<l$ for
+$x\in(\xi-h,\xi)\cup(\xi,\xi+h)$.
+\begin{enumerate}
+\item (i) $l<0 \implies h$ makes $f(x)<0$.
+\item (ii) Cannot find $h$.
+\end{enumerate}
+\section{8.20 (6)}
+Since $|x\cdot f(x)|\in[0, |x|]$, by the sandwich theorem, since $\lim_{x\to0}|x|=0$,
+$\lim_{x\to0}x\cdot f(x)=0$.
+\end{document}
+
+
+\subsection{Application of System of Linear Equations}
+Define $\alpha=\frac{\sqrt2}2$.
+
+Code for testing for (ii):
+\begin{minted}{matlabsession}
+>> format short e;
+>> R = romberg('sqrt', 0, 1, 5)
+>> err = diag(R) - 2/3
+\end{minted}
+Results from Matlab:
+\begin{minted}[fontsize=\small]{text}
+R =
+
+\subsubsection*{(b).}
+$f(x)=\frac1{\sqrt{x+2}-\sqrt x}$, so when $x$ is large, $\sqrt{x+2}$ and $\sqrt x$ will
+get close to each other, so their difference might be very small and has much less significant digits,
+so dividing by it may result in an inaccurate result.
+
+\[
+P(x\mid M_0)=\frac{\exp{(-(x-15)^2/8)}}{2\sqrt{2\pi}}
+\]
+
+\subsection{Newton's Divided Difference in Matlab}
+\textbf{(a).}
+Content of file \texttt{newton.m}:
+\begin{minted}{matlab}
+function A = divdiff(x, y)
+% input: x, y: the data set to be interpolated
+% output: A: table for Newton's divided differences.
+  [~, n] = size(x);
+  A = zeros(n, n);
+  A(:, 1) = transpose(y);
+  % k: from left to right
+  for k = 2 : n
+    % i: from top to bottom
+    for i = k : n
+      % above /: the left one subtract its upstairs
+      above = A(i, k - 1) - A(i - 1, k - 1);
+      % below /: the leftmost one subtract its upstairs
+      below = x(i) - x(i - k + 1);
+      A(i, k) = above / below;
+    end
+  end
+end
+\end{minted}
+Script for testing purposes:
+\begin{minted}{matlabsession}
+>> format compact;
+>> x = [-1 1 3 5];
+>> y = [2 -4 6 10];
+>> divdiff(x, y)
+\end{minted}
+Output from Matlab:
+\begin{minted}{text}
+ans =
+    2.0000         0         0         0
+   -4.0000   -3.0000         0         0
+    6.0000    5.0000    2.0000         0
+   10.0000    2.0000   -0.7500   -0.4583
+\end{minted}
+This matches the table we obtained earlier.
+
+\subsection{On Newton's Method}
+\hwsec{(a).}
+Derivative:
+\[f'(x)=3 x^2\]
+Newton's method:
+\[x_{k+1}=
+x_k-\frac{f(x_k)}{f'(x_k)}=
+x_k-\frac{x_k^3-R}{3 x_k^2}=
+\frac13(2x_k^3-\frac{R}{x_k^2})\]
+
+Solving the equations gets: $a=0.6, b=-0.5$.
+
+\title{ Homework 11}
+\author{ \\ \texttt{@psu.edu}}
+
+\begin{align*}
+L(\lambda)&=\prod^n_{i=1}\frac{\lambda^{x_i}e^{-\lambda}}{x_i!}\\
+&=e^{-n\lambda}\prod^n_{i=1}\frac{\lambda^{x_i}}{x_i!}\\
+&=e^{-n\lambda}\frac{\lambda^{\sum^n_{i=1}x_i}}{\prod^n_{i=1} (x_i!)}
+\end{align*}
+
+\subsection{Least Squares Approximation of Functions}
+So $g(x)=\alpha g_1(x)+\beta g_2(x)$ given that $g_1(x)=\cos(\pi x)$ and $g_2(x)=\sin(\pi x)$ orthogonal.
+So, by the slides, we can solve $\alpha$:
+\[\alpha=\frac{-\int_{-1}^0 \cos{\pi x} dx+\int_0^1 \cos(\pi x)dx}{\int_{-1}^1 \cos^2(\pi x)dx}=0\]
+And $\beta$:
+\[\beta=\frac{-\int_{-1}^0 \sin{\pi x}dx+\int_0^1 \sin(\pi x)dx}{\int_{-1}^1 \sin^2(\pi x)dx}=\frac{4}{\pi}\]
+
+So the test statistic is \(\chi^2=124.77\). Degrees of freedom:
+\((2-1)\times (3-1)=2\).
+
+\documentclass{amsart}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{amsthm}
+\usepackage{hyperref}
+\newtheorem*{remark}{Remark}
+\title{Math 401 Homework 3}
+\author{}
+\email{@psu.edu}
+\begin{document}
+\maketitle
+\tableofcontents
+\section{3.6}
+\subsection{3.6 (1)}
+\label{sub:3-6-1}
+\begin{proof}
+Since $n-1<n$ and $n\in\mathbb N$, $\frac{n-1}n<1$, so $1$ is an upper bound.
+For all upper bound $k>\frac{n-1}n$, $nk>n-1$, so $k>1-\frac1n$. If $k=1-h$ for $h>0$,
+then $1-h>1-\frac1n$, so $\frac1n>h$, so $nh<1$, which is not necessarily true
+(Archimedean property), leading to a contradiction. So $1$ is the smallest upper bound.
+\end{proof}
+$S$ does not have a maximal (seems like a proof is not required).
+\subsection{3.6 (2)}
+\begin{proof}
+Suppose $S$ is bounded above, and denote its least upper bound as $k$,
+so $\frac kX$ is not an upper bound, so $\exists n\in\mathbb N. X^n>\frac kX$,
+hence $X^{n+1}>k$, contradicts the fact that $k$ is an upper bound.
+\end{proof}
+
+\hwsec{(c).} Apply the classic 4-th order Runge-Kutta method:
+For $k=0$:
+\begin{align*}
+  K_1&=0.1\times (2\times 1^2)=0.2\\
+  K_2&=0.1\times (2\times 1.1^2+0.1)=0.252\\
+  K_3&=0.1\times (2\times \frac{2.252}{2}^2+\frac{2.252}{2}-1)=0.2662\\
+  K_4&=0.1\times (2\times (1+0.2662)^2+0.2662)\approx0.3473\\
+  x_1&=1+\frac{0.2+2\times 0.252+2\times 0.2662+0.3473}{6}\approx1.2639\\
+\end{align*}
+For $k=1$:
+\begin{align*}
+  K_1&=0.348579&K_2&=0.459585\\
+  K_3&=0.494547&K_4&=0.694272\\
+  x_2&=1.7557525
+\end{align*}
+
+\hwsec{(b).}
+Since there are $5$ points, $L(x)$ consists of $4$ cubic segments,
+the $i$-th cubic segment is an interval from $(t_i,y_i)$ to
+$(t_{i+1}, y_{i+1})$ for $i\in\set{0,1,2,3}$.
+The segments not only have to be continuous at $t_i$ for $i\in\set{1,2,3}$,
+but their first and second derivatives must also be continuous at these points.
+So $h_0=0.3,h_1=0.1,h_2=0.4,h_3=0.2$,
+and $h_0+h_1=0.4,h_1+h_2=0.5,h_2+h_3=0.6$, and:
+\[{\textbf H}=\bkarr{ccc}{
+0.8 & 0.1 &\\
+0.1 & 1 & 0.4\\
+& 0.4 & 1.2}\]
+% map (\i->(y!!(i+1)-y!!i)/(x!!(i+1)-x!!i)) [0,1,2,3]
+Also, $b_0=2.3717,b_1=-2.6540,b_2=-6.6218,b_3=4.1075$, so:
+\[\vec v=\bkarr{c}{-30.1540\\ -8.0373\\ 55.6311}\]
+Solving for $z$ gets:
+\[\vec z=\bkarr{c}{-33.9614\\ -29.8487\\ 53.5958}\]
+By the definition of $C$:
+\begin{align*}
+C_i(x)&=\frac{z_{i+1}}{6h_i}(x-t_i)^3-\frac{z_i}{6h_i}(x-t_{i+1})^3+(\frac{y_{i+1}}{h_i}-\frac{h_i}{6}z_{i+1})(x-t_i)\\
+&-(\frac{y_i}{h_i}-\frac{h_i}{6}z_i)(x-t_{i+1})
+\end{align*}
+So:
+\begin{align*}
+C_0(x)&=\frac{-33.9614}{6\times 0.3}(x-1.2)^3-\frac{0}{6\times 0.3}(x-1.5)^3\\&+(\frac{1.139}{0.3}-\frac{0.3}{6}\times -33.9614)(x-1.2)-(\frac{0.4275}{0.3}-\frac{0.3}{6}\times 0)(x-1.5)\\
+C_1(x)&=\frac{-29.8487}{6\times 0.1}(x-1.5)^3-\frac{-33.9614}{6\times 0.1}(x-1.6)^3\\&+(\frac{0.8736}{0.1}-\frac{0.1}{6}\times -29.8487)(x-1.5)-(\frac{1.139}{0.1}-\frac{0.1}{6}\times -33.9614)(x-1.6)\\
+C_2(x)&=\frac{53.5958}{6\times 0.4}(x-1.6)^3-\frac{-29.8487}{6\times 0.4}(x-2)^3\\&+(\frac{-0.9751}{0.4}-\frac{0.4}{6}\times 53.5958)(x-1.6)-(\frac{0.8736}{0.4}-\frac{0.4}{6}\times -29.8487)(x-2)\\
+C_3(x)&=\frac{0}{6\times 0.2}(x-2)^3-\frac{53.5958}{6\times 0.2}(x-2.2)^3\\&+(\frac{-0.1536}{0.2}-\frac{0.2}{6}\times 0)(x-2)-(\frac{-0.9751}{0.2}-\frac{0.2}{6}\times 53.5958)(x-2.2)
+\end{align*}
+% `C_${i}(x)&=\frac{${z[i+1]}}{6\times ${h[i]}}(x-${t[i]})^3-\frac{${z[i]}}{6\times ${h[i]}}(x-${t[i+1]})^3\\&+(\frac{${y[i+1]}}{${h[i]}}-\frac{${h[i]}}{6}\times ${z[i+1]})(x-${t[i]})-(\frac{${y[i]}}{${h[i]}}-\frac{${h[i]}}{6}\times ${z[i]})(x-${t[i+1]})\\`
+Simplification:
+\begin{align*}
+C_0(x)&=-18.8674 x^3 + 67.9228 x^2 - 77.4376 x + 28.1468\\
+C_1(x)&=6.8545 x^3 - 47.826 x^2 + 96.1855 x - 58.6648\\
+C_2(x)&=34.7685 x^3 - 181.813 x^2 + 310.565 x - 173.001\\
+C_3(x)&=-44.6632 x^3 + 294.777 x^2 - 642.615 x + 462.453
+\end{align*}
+So $C=\barr{rrl}{&-18.8674 x^3 + 67.9228 x^2 - 77.4376 x + 28.1468&x\in[1.2,1.5]\\
+&6.8545 x^3 - 47.826 x^2 + 96.1855 x - 58.6648&x\in[1.5,1.6]\\
+&34.7685 x^3 - 181.813 x^2 + 310.565 x - 173.001&x\in[1.6,2]\\
+&-44.6632 x^3 + 294.777 x^2 - 642.615 x + 462.453&x\in[2,2.2]}$,
+and $C(1.8)=-0.2882$.
+
+\hwsec{(c).}
+Iteration from $x_0$ to $x_4$, using the matlab script:
+\begin{minted}{matlabsession}
+>> format compact;
+>> f = @(x) exp(-x) - cos(x);
+>> x = 1.6;
+>> for i = 1:4, x = x - f(x), end;
+\end{minted}
+Result:
+\begin{minted}{text}
+x =
+    1.3689
+x =
+    1.3150
+x =
+    1.2996
+x =
+    1.2948
+\end{minted}
+Observe that $x_0>x_1>x_2>x_3>x_4$ (monotone), so it probably converges too.
+Script to compute the value of convergence:
+\begin{minted}{matlabsession}
+>> format compact;
+>> f = @(x) exp(-x) - cos(x);
+>> x = 1.6;
+>> for i = 1:100, x = x - f(x); end;
+>> x = x - f(x)
+>> x = x - f(x)
+\end{minted}
+Result:
+\begin{minted}{text}
+x =
+    1.2927
+x =
+    1.2927
+\end{minted}
+Check: $g_2'(1.2927) \approx 0.3129<1$,
+so it converges with root $r=1.2927$.
+It converges with a strictly decreasing sequence,
+while (b) converges with a strictly increasing sequence.
+
+\subsection{Scalar ODE}
+Let $h=0.1$ be the time interval, $t_0=1$ and $x_0=1$ be the initial condition.
+\hwsec{(a).} Apply forward Euler step for $m=1$:
+\[x_{k+1}=x_k+h(2x_k^2+x_k-1)\]
+Iteration:
+\begin{align*}
+x_1&=x_0+h(2x^2+x-1)=1+0.1\times (2\times 1^2+1-1)=1.2\\
+x_2&=x_1+0.1\times (2\times 1.2^2+1.2-1)=1.508
+\end{align*}
+Hence $x_2=1.508$.
+
+\noindent
+(iii). $(101.01)_2=1+4+2^{-2}=(265.68)_{10}$
+
+\subsection{Solving the Airy Equation}
+We rewrite it as a system of first order ODEs:
+\[\begin{cases}
+x'=y\\
+y'=tx
+\end{cases}\]
+Initial conditions:
+\[x(0)=0.355028053887817, y(0)=-0.258819403792807\]
+Matlab script, using the provided \texttt{rk4} function:
+\begin{minted}{matlabsession}
+>> format compact;
+>> format long;
+>> f = @(t, y) [y(2); t * y(1)];
+>> x0 = [0.355028053887817 -0.258819403792807];
+>> [t, x] = rk4(f, 0, x0, -4.5, 1000);
+>> [t, x] = rk4(f, -4.5, x(:, end), 4.5, 2000);
+>> x(1, end)
+\end{minted}
+Matlab output:
+\begin{minted}{text}
+ans =
+     3.302502650428340e-04
+\end{minted}
+This is approximately $0.00033025026$,
+very close to the given answer $0.00033025034$.
+
+\subsection{Solving ODE backward in time}
+Initial condition (to make $t_1=-0.2$):
+\[t_0=0,x_0=2,h=-0.2\]
+Derivatives:
+\[x''(t)=-x^2-2tx\times x',x''(0)=-4,x'(0)=0\]
+Iteration using Taylor series:
+\[x_1=2-0.2\times 0+\frac{-0.2^2}{2}\times (-4)=1.92\]
+Iteration using Runge-Kutta method:
+\begin{align*}
+  K_1&=-0.2\times0=0\\
+  K_2&=-0.2\times f(-0.2,2)=-0.2\times(0.2\times4)=-0.16\\
+  x_1&=2+\frac{-0.16}{2}=1.92
+\end{align*}
+
+\end{document}
+
+\subsection{Computing $\pi$ with Romberg}
+Function to integrate:
+\begin{minted}{matlab}
+function v = funItg3(x)
+    v = sqrt(1 - x.^2) - x;
+end
+\end{minted}
+Script for computing $\pi$:
+\begin{minted}{matlabsession}
+>> myPi = romberg('funItg3', 0, 1/sqrt(2), 7) * 8
+>> err = diag(myPi) - pi
+\end{minted}
+Results from Matlab:
+\begin{minted}[fontsize=\scriptsize]{text}
+myPi =
+
+(a) It is known from homework 1 that the joint PDF \(L(\theta)\) is
+\(e^{-\sum^n_{i=1}\frac{X_i^2}{2{a_i \theta}}}\times (2\theta\pi)^{n/2}\times \prod^n_{i=1}a_i^{1/2}\),
+where we can drop everything except the factor
+\(e^{-\sum^n_{i=1}\frac{X_i^2}{2{a_i \theta}}}\), which can be
+simplified further as
+\(e^{-\frac1{2\theta}\sum^n_{i=1}\frac{X_i^2}{a_i}}\). Therefore
+\(\fbox{$T=\sum^n_{i=1}\frac{X_i^2}{a_i}$}\) is a sufficient statistics.
+The MLE is a function out of this (also according to the computed MLE
+\(\hat\theta=\fbox{$\frac1n\sum^n_{i=1}\frac{X_i^2}{a_i}$}\) in homework
+1).
+
+     7
+
+\noindent\textbf{(c).}
+Since $q(x)$'s table essentially adds one column to the table of $p(x)$,
+we may think of $P_5(x)=p(x)=x^4-x^3+x^2-x+1$ in
+Newton's form and use it to compute $P_6(x)=q(x)$,
+with the new point $x_6=-3$ and $y_6=193$.
+% join $ map (\x->"(x-("++show x++"))") [-2,-1,0,1,2,3]
+Before that, we need to first compute $a_6$:
+\begin{align*}
+a_6&=\frac{y_6-P_5(x_6)}{\prod_{x_i\in\set{-2,-1,0,1,2,3}}(x_6-x_i)}\\
+&=\frac{193-p(-3)}{\prod_{x_i\in\set{-2,-1,0,1,2,3}}(-3-x_i)}\\
+&=\frac{193-121}{720}=\frac{72}{720}\\
+&=0.1
+\end{align*}
+Then we can compute $P_6(x)$:
+\begin{align*}
+P_6(x)={}&P_5(x)+a_6\prod_{x_i\in\set{-2,-1,0,1,2,3}}(x-x_i)\\
+={}&p(x)+0.1(x^6 - 3 x^5 - 5 x^4 + 15 x^3 + 4 x^2 - 12 x)\\
+={}&0.1 x^6 - 0.3 x^5 + 0.5 x^4 + 0.5 x^3 + 1.4 x^2 - 2.2 x + 1
+\end{align*}
+Thus $q(x)=0.1 x^6 - 0.3 x^5 + 0.5 x^4 + 0.5 x^3 + 1.4 x^2 - 2.2 x + 1$.
+
+(b) Using results in (a):
+
+(a) Similar to problem 2, we first compute \(L(\lambda)\):
+
+   0.552505383453252   0.551129851948798   0.550785754235408   0.550699716367144
+
+\begin{align*}
+I(\log{\hat\theta})&=-E\left(\frac{\partial^2\log{L(\theta)}}{\partial^2(\log \theta)^2}\right)\\
+&=-E\left(0+\sum^n_{i=1}\frac{X_i^2}{2a_i}\times \frac{\partial e^{-\log\theta}}{\partial \log\theta}\right)\\
+&=-E\left(-e^{-\log\theta}\sum^n_{i=1}\frac{X_i^2}{2a_i}\right)\\
+&=-E\left(-\frac1\theta\sum^n_{i=1}\frac{X_i^2}{2a_i}\right)=\frac1{2\theta}E\left(\sum^n_{i=1}\frac{X_i^2}{a_i}\right)\\
+&=\frac1{2\theta}\left(n\theta\right)=\frac n2\\
+\end{align*}
+
+\hwsec{(b).}
+What we have: $T(f, h)$, $T(f, h/3)$, $T(f, h/9)$.
+Similar to the slides, we may derive:
+\[\begin{array}{rlll}
+E(f, h) &= I(f)-T(f, h)=\sum^{n/2}_{i=1} a_{2i}h^{2i}\\
+E(f, h/3) &= I(f)-T(f, h/3)=\sum^{n/2}_{i=1} a_{2i}(h/3)^{2i}\\
+E(f, h/9) &= I(f)-T(f, h/9)=\sum^{n/2}_{i=1} a_{2i}(h/9)^{2i}
+\end{array}\]
+For $a_n$ depending on the derivative $f^{(n)}$.
+
+By example 1.6 and the positivity of absolute values,
+$|c-d|\geq||c|-|d||$.
+\end{proof}
+\section{1.20 (5)}
+\begin{proof}
+Since $\alpha$ is a root, $a\alpha^2+b\alpha+c=0$, so:
+\begin{align*}
+0&=a\alpha^2+b\alpha+c\\
+ &=a(r+s\sqrt2)^2+b(r+s\sqrt2)+c\\
+ &=ar^2+2as^2+br+bs\sqrt2+c\\
+ &=(ar^2+2as^2+br+c)+bs\sqrt2
+\end{align*}
+Since $\sqrt2$ is irrational, $bs\sqrt2$ must be irrational or $0$.
+$0$ and $ar^2+2as^2+br+c$ are both rational, $bs\sqrt2$ must be $0$,
+so $bs\sqrt2=-bs\sqrt2$.
+
+   1.0e+07 *
+
+   5.0000e-01            0            0            0            0
+   6.0355e-01   6.3807e-01            0            0            0
+   6.4328e-01   6.5653e-01   6.5776e-01            0            0
+   6.5813e-01   6.6308e-01   6.6352e-01   6.6361e-01            0
+   6.6358e-01   6.6540e-01   6.6555e-01   6.6559e-01   6.6559e-01
+
+\newcommand{\abs}[1]{\left| #1 \right|}
+\newcommand{\barr}[2]{\left\{
+  \begin{array}{#1}#2\end{array}
+\right.}
+\newcommand{\bkarr}[2]{\left[
+  \begin{array}{#1}#2\end{array}
+\right]}
+\newcommand{\hwsec}[1]{\noindent\textbf{#1}}
+\newcommand{\simplot}[1]{\begin{center}
+  \includegraphics[width=0.7\textwidth]{#1}
+\end{center}}
+\newcommand{\circled}[1]{\tikz[baseline=(char.base)]{
+  \node[shape=circle,draw,inner sep=2pt] (char) {#1};
+}}
+\newcommand{\norm}[1]{\|{#1}\|}
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\setcounter{enumi}{1}
+\item
+  Under \(M_1\), \(\mu\sim N(15, 5^2)\).
+\item
+  The Bayes factor \(B\) is \(\frac{P(x\mid M_0)}{P(x\mid M_1)}\).
+\end{enumerate}
+
+\noindent
+(ii). $(1001100101.01101)_2=1+4+32+64+512+2^{2}+2^{3}+2^{5}=(613.40625)_{10}$
+
+To avoid this, consider $g(x) = \sqrt{x^2+2x+2}+(x+1)$, observe that:
+\begin{align*}
+f(x)g(x)&=\left(\sqrt{x^2+2x+2}+(x+1)\right)\left(\sqrt{x^2+2x+2}-(x+1)\right)\\
+&=\sqrt{x^2+2x+2}^2-(x+1)^2\\
+&=x^2+2x+2-(x^2+2x+1)\\
+&=1
+\end{align*}
+So when we want to calculate
+$f(x)$, we first calculate $g(x)$ (which is pure addition), and then
+we compute $f(x)=\frac1{g(x)}$.
+
+\subsection{Bisection in Matlab}
+\hwsec{(a).} Matlab code for \texttt{bisection.m}:
+\begin{minted}{matlab}
+function r = bisection(f, a, b, tol, nmax)
+  % function r=bisection(f,a,b,tol,nmax)
+  % inputs: f: function handle or string
+  %       a,b: the interval where there is a root
+  %       tol: error tolerance
+  %       nmax: max number of iterations
+  % output: r: a root
+  fa = feval(f, a);
+  if fa * feval(f, b) > 0
+    error('f(a) * f(b) > 0');
+  end
+
+\documentclass{amsart}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{amsthm}
+\usepackage{hyperref}
+\usepackage{mathpazo}
+\usepackage{tikz-cd}
+\usetikzlibrary{calc}
+\usetikzlibrary{decorations.pathmorphing}
+% A TikZ style for curved arrows of a fixed height, due to AndréC.
+\tikzset{curve/.style={settings={#1},to path={(\tikztostart)
+    .. controls ($(\tikztostart)!\pv{pos}!(\tikztotarget)!\pv{height}!270:(\tikztotarget)$)
+    and ($(\tikztostart)!1-\pv{pos}!(\tikztotarget)!\pv{height}!270:(\tikztotarget)$)
+    .. (\tikztotarget)\tikztonodes}},
+    settings/.code={\tikzset{quiver/.cd,#1}
+        \def\pv##1{\pgfkeysvalueof{/tikz/quiver/##1}}},
+    quiver/.cd,pos/.initial=0.35,height/.initial=0}
+% TikZ arrowhead/tail styles.
+\tikzset{tail reversed/.code={\pgfsetarrowsstart{tikzcd to}}}
+\tikzset{2tail/.code={\pgfsetarrowsstart{Implies[reversed]}}}
+\tikzset{2tail reversed/.code={\pgfsetarrowsstart{Implies}}}
+% TikZ arrow styles.
+\tikzset{no body/.style={/tikz/dash pattern=on 0 off 1mm}}
+\newcommand{\angled}[1]{\langle#1\rangle}
+\newtheorem*{remark}{Remark}
+\title{Math 401 Homework 10}
+\author{}
+\email{@psu.edu}
+\begin{document}
+\maketitle
+\tableofcontents
+\section{10.11 (1)}
+\begin{align*}
+LHS&=\lim_{h\to0}\frac{\frac1{1+(x+h)^2}-\frac1{1+x^2}}2\\
+&=\lim_{h\to0}\frac{-2x-h}{(1+(x+h)^2)(1+x^2)}\\
+&\to \frac{-2x}{(1+x^2)^2}
+\end{align*}
+\section{10.11 (2)}
+Let $m=-n$, so $m>0$, and the goal becomes $D\frac1{x^m}=\frac{-m}{x^{m+1}}$.
+Simply apply 10.9 (iii), take $f(x)=1$, $g(x)=x^m$ and hence the result.
+\section{10.11 (3)}
+So,
+\begin{enumerate}
+\item $\lim_{h\to+0}f'(x)=\frac{2+2h-2}h=2$
+\item $\lim_{h\to-0}f'(x)=\frac{(1+h)^2-1}h=2+h$
+\end{enumerate}
+Both approach $2$, so the limit exists.
+\section{10.11 (4)}
+Apply 3.11 (3) twice and by $P'(\xi)=0$.
+\section{10.15 (4)}
+Simplification:
+\begin{align*}
+(\frac{f(x+h)-f(x)}h)^2&=\frac{f((x+h)^2)-f(x^2)}h\\
+(f(x+h)-f(x))^2&=h(f((x+h)^2)-f(x^2))
+\end{align*}
+Since it only holds at $x=1$ we may bring it in:
+\begin{align*}
+(f(1+h)-f(1))^2&=h(f((1+h)^2)-f(1))\\
+f'(1)\cdot(f(1+h)-f(1))&=f(1+2h+h^2)-f(1)\\
+f'(1)\cdot(f(1+h)-f(1))&=f(1+2h)-f(1)
+\end{align*}
+Hence the result.
+\end{document}
+
+
+\title{ Lab4 Report}
+\author{ \\ {@psu.edu}}
+
+  while nit < nmax && norm(A * x - b) > tol
+    y = zeros(n, 1);
+    for i = 1:n
+      aii = A(i, i);
+      sigma = sum(A(i, 1:n)' .* x) - aii * x(i);
+      y(i) = (b(i) - sigma) / aii;
+    end
+    x = y;
+    nit = nit + 1;
+  end
+end
+\end{minted}
+Script for testing (adapted from previous problem):
+\begin{minted}{matlabsession}
+>> format compact;
+>> A = diag(-2.011:-0.001:-2.019);
+>> for i = 1:length(A)-1, A(i+1,i)=1; A(i,i+1)=1; end;
+>> b0 = [-0.994974 1.57407e-3 -8.96677e-4];
+>> b1 = [-2.71137e-3 -4.07407e-3 -5.11719e-3];
+>> b2 = [-5.92917e-3 -6.57065e-3 0.507084];
+>> b = [b0 b1 b2]';
+>> x0 = [0.95:-0.05:0.55]';
+>> [x, nit] = jacobi(A, b, x0, 1e-4, 100)
+\end{minted}
+Results from Matlab:
+\begin{minted}{text}
+x =
+    0.8299
+    0.6737
+    0.5273
+    0.3864
+    0.2482
+    0.1092
+   -0.0331
+   -0.1823
+   -0.3414
+nit =
+   100
+\end{minted}
+Apparently, it does not reach the required tolerable error
+after $100$ iterations.
+With some testing, it needs $133$ iterations after all,
+so this is much slower than the SOR method.
+
+\documentclass{amsart}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{amsthm}
+\usepackage{hyperref}
+\usepackage{mathpazo}
+\usepackage{tikz-cd}
+\usetikzlibrary{calc}
+\usetikzlibrary{decorations.pathmorphing}
+% A TikZ style for curved arrows of a fixed height, due to AndréC.
+\tikzset{curve/.style={settings={#1},to path={(\tikztostart)
+	.. controls ($(\tikztostart)!\pv{pos}!(\tikztotarget)!\pv{height}!270:(\tikztotarget)$)
+	and ($(\tikztostart)!1-\pv{pos}!(\tikztotarget)!\pv{height}!270:(\tikztotarget)$)
+	.. (\tikztotarget)\tikztonodes}},
+	settings/.code={\tikzset{quiver/.cd,#1}
+		\def\pv##1{\pgfkeysvalueof{/tikz/quiver/##1}}},
+	quiver/.cd,pos/.initial=0.35,height/.initial=0}
+\newtheorem*{remark}{Remark}
+\title{Math 401 Final Exam}
+\author{}
+\email{@psu.edu}
+\begin{document}
+\maketitle
+\tableofcontents
+\section{Acknowledgment}
+I have referred to my previous homework writeups and the textbook.
+\section{Solutions}
+\begin{enumerate}
+\item Since the order of $P$ is $4$, the number of roots is $4$.
+	It remains to show that they're real. Since:
+	\begin{itemize}
+	\item $f(-3)=7>0$
+	\item $f(-2)=-13<0$
+	\item $f(0)=1>0$
+	\item $f(1)=-1<0$
+	\item $f(2)=7>0$
+	\end{itemize}
+	And $f$ is evidently continuous, by a simple corollary of the mean value theorem
+	we can conclude that there are $4$ real roots lying in $(-3,-2)$, $(-2,0)$, $(0,1)$, $(1,2)$.
+\item Consider the partition $P=\{1,2,3\}$, the Riemann sum $S(f)$ at $P$ is $f(2)+f(3)=6+12=18$.
+	By the fundamental theorem of calculus, it is not hard to see that for $F(x)=\frac{x^3}3+\frac{x^2}2+C$, $F'=f$,
+	so $\int^3_1 f(x)dx=F(3)-F(1)=\frac{38}3$.
+\item \begin{enumerate}
+	\item $f(0)=0\implies d=0$ and $a,b,c$ are arbitrary.
+	\item $\lim_{x\to0-}f(x)=0\implies d=0$ and $a,b,c$ are arbitrary.
+	\item $\lim_{x\to0-}f'(x)=1$ while $f'(x)=3ax^2+2bx+c$ so $c=1$, $d=0$, and $a,b$ are arbitrary.
+	\item $\lim_{x\to0-}f''(x)=0$ while $f''(x)=6ax+2b$ so $b=0$ and $a,c,d$ are arbitrary.
+	\item $\lim_{x\to0-}f'''(x)=0$ while $f'''(x)=6a$ so $a=0$ and $a,c,d$ are arbitrary.
+	\item $\lim_{x\to0-}f''''(x)=0$ while $f''''(x)=0$ so for whatever value of $a,b,c,d$ should work.
+	\end{enumerate}
+\item Apply the chain rule, $f'(x)=\cos(x)\cdot e^{\sin(x)}$.
+\item By the previous problem, take $F(x)=e^{\cos(x)}$, $F'(x)=\cos(x)\cdot e^{\sin(x)}$.
+	So, $\int^{\pi/2}_0 \cos(x)\cdot e^{\sin(x)}dx=F(\frac\pi2)-F(0)=1-e$.
+\item Since $x\sin{\frac1x}\in[-x,x]$ and $\lim_{x\to0}-x=\lim_{x\to0}x=0$, by the sandwich theorem,
+$\lim_{x\to0}=0$, matches the defined value at $f(0)$.
+\end{enumerate}
+\end{document}
+
+We continue the equation reasoning:
+\begin{align*}
+ &~(ar^2+2as^2+br+c)+bs\sqrt2\\
+=&~(ar^2+2as^2+br+c)-bs\sqrt2\\
+=&~ar^2+2as^2+br-bs\sqrt2+c\\
+=&~ar^2+2a(-s)^2+br-bs\sqrt2+c\\
+=&~a(r-s\sqrt2)^2+b(r-s\sqrt2)+c
+\end{align*}
+So $a(r-s\sqrt2)^2+b(r-s\sqrt2)+c=0$, so $r-s\sqrt2$ is also a solution.
+\end{proof}
+\end{document}
+
+%   for i = 1:n
+%     A(i, n - i + 1) = a(n - i + 1);
+%     A(i, i) = d(i);
+%   end
+
+It is accurate because the second derivative of $3x^2$ already linear,
+and what we have computed is the second entry in the Romberg table.
+
+\hwsec{(b).}
+I think the following is already good enough, as we are not asked to do error estimation:
+\[x^{k+1}=(1-\omega)x^k+\omega{(D+L)}^{-1}(b-Ux^k)\]
+
+   -3.4365
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\tightlist
+\item
+  So \(E_{i, j}=\frac{X_{i+}\times X_{+j}}{X_{++}}\), and we test
+  \(\chi^2=\sum_{i, j}\frac{(X_{i,j}-E_{i, j})^2}{E_{i, j}}\).
+\end{enumerate}
+
+\section{Values changed at line 13}
+In the first iteration, nothing's changed except \texttt{pc}.
+In the second iteration, apart from \texttt{pc}, \texttt{lo} and \texttt{\$t7} are both changed.
+In the following iterations, the sets of changed variables are the same as the second iteration.
+\end{document}
+
+
+\hwsec{(b).} The original system:
+\[\barr{rl}{x_1+x_2&=2\\\beta x_1+x_2&=2+\beta}\]
+So $x_1=2-x_2$, hence $x_2=2+\beta-\beta(2-x_2)$, so $x_2=\frac{\beta - 2}{\beta - 1}$.
+We rewrite it as the following upper-triangular form:
+\[\barr{rl}{x_1+x_2&=2\\ x_2&=\frac{\beta - 2}{\beta - 1}}\]
+Hence when $\beta=1$, the solution does not exist, and Gaussian elimination will not be able to solve it.
+
+\subsection{Simpson's Rule}
+Dataset:
+\[\begin{array}{|c||c|c|c|c|c|}
+  \hline
+  x_i& 0.00&0.25&0.50&0.75&1.00 \\ \hline
+  f(x_i)& 0.00&0.06&0.24&0.51&0.84 \\ \hline
+\end{array}\]
+\hwsec{(a).}
+By the Simpson's rule:
+\begin{align*}
+  S(f;0.25)&=\frac{h}{3} \left(f(x_0)+4\left(f(x_1)+f(x_3)\right)+2 f(x_2)+f(x_4)\right)\\
+  &=0.3
+\end{align*}
+\hwsec{(b).}
+By the ``4th derivative'' graph, we can see that $f''''(x)$ is the largest when $x=1$,
+and the value is approximately $-1.4$. So:
+\[\begin{array}{crl}
+  &|E_S(f;h)|&\leq \frac{1-0}{180}\times h^4 \times 1.4 \leq 10^{-6} \\
+  \implies& h^4 &\leq 180\times 10^{-6}\div 1.4=\frac 9{70000} \approx 0.00013\\
+  \implies& h=\frac{1}{2n} \leq 0.106779\\
+  \implies& 2n+1 \geq 10.365137
+\end{array}\]
+So we need at least $11$ points.
+
+\section{Program output}
+\texttt{The sum from 0 .. 100 is :338350:}
+
+\title{ Homework 8}
+\author{ \\ \texttt{@psu.edu}}
+
+  r = sum([a, b]) / 2;
+  if nmax <= 0
+    return;
+  end
+
+When \(\ell'(\lambda)=0\), \(\lambda=\bar X\), so
+\(\hat\lambda_{MLE}=\bar X\), and the Fisher's information is:
+
+  -5.5500e-06
+\end{minted}
+
+\subsection{Non-linear Shooting for a Two-point Boundary Value Problem}
+\hwsec{(a).}
+So $y(x)=\sin x$, hence:
+\begin{align*}
+  y'(x)&=\cos x\\
+  y''(x)&=-\sin x
+\end{align*}
+Bringing these values into both the equation, the boundary conditions,
+\textit{and} the initial conditions, all reach an equilibrium.
+
+\hwsec{(ii).}
+Initial conditions: \texttt{[0 1 0]},
+time span: \texttt{0:0.1:80}. Hence the following Matlab code:
+\begin{minted}{matlabsession}
+>> format compact;
+>> rho = 10; b = 8/3; r = 28;
+>> f1 = @(t, y) rho * (y(2) - y(1));
+>> f2 = @(t, y) y(1) * (b - y(3)) - y(2);
+>> f3 = @(t, y) y(1) * y(2) - r * y(3);
+>> ode = @(t, y) [f1(t, y); f2(t, y); f3(t, y)];
+>> [t, y] = ode45(ode, 0:0.1:80, [0 1 0]);
+>> % 3D plot of the Lorenz system
+>> plot3(y(:,1), y(:,2), y(:,3))
+>> % 2D plots of solutions
+>> plot(t, y(:,1), t, y(:,2), t, y(:,3))
+>> % 2D plot of x against y
+>> plot(y(:,1), y(:,2))
+>> % 2D plot of x against z
+>> plot(y(:,1), y(:,3))
+>> % 2D plot of y against z
+>> plot(y(:,2), y(:,3))
+\end{minted}
+The 3D plot of the Lorenz system:
+\simplot{9.5-1.png}
+The solutions:
+\simplot{9.5-2.png}
+The plot of $x$ against $y$:
+\simplot{9.5-xy.png}
+The plot of $x$ against $z$:
+\simplot{9.5-xz.png}
+The plot of $y$ against $z$:
+\simplot{9.5-yz.png}
+
+(a) Joint PDF:
+
+Then:
+\[\frac{2u_{i-1,j}-4u_{i,j}+2u_{i+1,j}}{h^2}+
+ \frac{u_{i,j-1}-2u_{i,j}+u_{i,j+1}}{h^2}=0\]
+
+\hwsec{(d).}
+The point of intersection is the solution of the equation $x^3-2x+1=x^2$,
+hence the following code for testing:
+\begin{minted}{matlabsession}
+>> format compact;
+>> f = @(x) x^3 - x^2 - 2 * x + 1;
+>> bisection(f, -10, 10, 1e-6, 100)
+\end{minted}
+Result:
+\begin{minted}{text}
+ans =
+    1.8019
+\end{minted}
+So the point is $(1.8019, 3.2468)$.
+
+% I did two more experiments:
+% \begin{minted}{matlabsession}
+% >> GXExp(5, 1:1:5, 2:1:6, [3 5 3 9 11])
+% >> GXExp(5, 1:1:5, 2:1:6, [7 7 3 7 7])
+% \end{minted}
+% Results:
+% \begin{minted}{text}
+% 1.0000         0         0         0    6.0000
+%       0    2.0000         0    5.0000         0
+%       0         0    3.0000         0         0
+%       0         0         0   -3.5000         0
+%       0         0         0         0   -7.0000
+% 7.2857    3.5714    1.0000   -0.4286   -0.7143
+
+(c) By invariance property of MLE, \(\log\theta=\log{\hat\theta}\), so
+by asymptotic distribution we need to compute \(I(\log{\hat\theta})\).
+For that there's a lemma from
+\href{https://www.wolframalpha.com/input?i2d=true\&i=D\%5Blog+\%5C\%2840\%29L\%5C\%2840\%29\%CE\%B8\%5C\%2841\%29\%5C\%2841\%29\%2Clog+\%CE\%B8\%5D}{calculator}:
+\(\frac{\partial{\log{L(\theta)}}}{\partial \log \theta}=0\), so:
+
+\title{ Homework 6}
+\author{ \\ \texttt{@psu.edu}}
+
+\begin{align*}
+P\left(-1.96<\sqrt{I(\lambda)}\times \left(\hat\lambda_{MLE}-\lambda\right)<1.96\right)&=0.95\\
+P\left(-1.96<\bar X\sqrt n\times \left(\frac 1{\bar X}-\lambda\right)<1.96\right)&=0.95\\
+\end{align*}
+
+\subsection{Linear Spline in Matlab}
+Matlab code:
+\begin{minted}{matlab}
+function ls = lspline(t, y, x)
+% lspline computes the linear spline
+% Inputs:
+% t: vector, contains the knots
+% y: vector, contains the interpolating values at knots
+% x: vector, contains points where the lspline function
+% should be evaluated and plotted
+% Output:
+% ls: vector, contains the values of lspline at points x
+  m = length(x);
+  n = length(t);
+  ls = zeros(size(t));
+  for j = 1 : m
+    xx = x(j);
+    for i = n - 1 : -1 : 1
+      if (xx - t(i)) >= 0
+        break
+      end
+    end
+    yd = y(i + 1) - y(i);
+    td = t(i + 1) - t(i);
+    ls(j) = yd / td * (xx - t(i)) + y(i);
+  end
+end
+\end{minted}
+Test script:
+\begin{minted}{matlabsession}
+>> x = [1.2:0.01:2.2];
+>> t = [1.2,1.5,1.6,2.0,2.2];
+>> y = [0.4275,1.139,0.8736,-0.9751,-0.1536];
+>> plot(x, lspline(t, y, x));
+\end{minted}
+Matlab generated plot:
+\simplot{3.4.png}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\section*{}
+\setcounter{section}{6}
+\newpage
+
+\subsection{Trapezoid rule and Romberg algorithm}
+\hwsec{(a).}
+Function for integration:
+\begin{minted}{matlab}
+function v = funItg2(x)
+  v = 3 .* x.^2;
+end
+\end{minted}
+Script for testing:
+\begin{minted}{matlabsession}
+>> trapezoid('funItg2', -1, 1, 1)
+>> trapezoid('funItg2', -1, 1, 2)
+\end{minted}
+For $n=1$, I get $6$, for $n=2$, I get $3$.
+
+\subsection{Explicit and implicit methods for heat equation}
+\hwsec{(a).}
+Again apply the usual rules,
+again using the notation $\gamma=\frac{\Delta t}{\Delta x^2}$ from the slides,
+again we have:
+\[u_j^{n+1}=2\gamma u_{j-1}^n+(1-4\gamma)u_j^n+2\gamma u_{j+1}^n\]
+For $j=[0, 4]$ and $n\geq 0$,
+\[u_j^0=f(x_j)=x_j(4-x_j),u_0^n=0,u_M^n=0\]
+
+\subsection{Laplace Equation in 2D}
+First,
+\[h=0.25=\frac1N\implies N=4\]
+
+\hwsec{(b).}
+By uniformity, ${\textbf H}$ is the following $(n-1)\times(n-1)$ tridiagonal matrix
+(suppose the points are $(t,y)_{i=0}^n$):
+\[{\textbf H}=\bkarr{ccccc}{
+4h & h & & &\\
+h & 4h & h & & \\
+& h & \ddots & \ddots &  \\
+& & \ddots & \ddots & h \\
+& & & h & 4h}\]
+By definition, $\vec v$ is:
+\[\vec v=6\bkarr{c}{b_1-b_0\\ b_2-b_1\\ \cdots\\ b_{n-1}-b_{n-2}}\]
+where $b_i=\frac{y_{i+1}-y_i}{h}$, so $b_{i+1}-b_i=\frac{y_{i+2}-2y_{i+1}+y_i}{h}$,
+so we can simplify $\vec v$ to be:
+\[\vec v=6\bkarr{c}{\frac{y_2+y_0-2y_1}h\\ \frac{y_3+y_1-2y_2}h\\ \cdots\\ \frac{y_n+y_{n-2}-2y_{n-1}}h}
+=\frac6h \bkarr{c}{{y_2+y_0-2y_1}\\ {y_3+y_1-2y_2}\\ \cdots\\ {y_n+y_{n-2}-2y_{n-1}}}\]
+
+\hwsec{(b).}
+Choice of $x_0$: it needs to be positive.
+Derivative:
+\[f'(x)=2x+\frac R{x^2}\]
+Newton's method:
+\[x_{k+1}=
+x_k-\frac{f(x_k)}{f'(x_k)}=
+x_k-\frac{x_k^2-\frac{R}{x_k}}{2x_k+\frac{R}{x_k^2}}\]
+
+ans =
+
+\title{ Lab1 Report}
+\author{ \\ {@psu.edu}}
+
+\hwsec{(b).}
+\begin{align*}
+&&u_t(t_{n+1},x_j)&\approx \frac{u_j^{n+1}-u_j^n}{\Delta t}\\
+&\implies& \frac{u_j^{n+1}-u_j^n}{\Delta t}&=\frac{4\gamma u_{j-1}^{n+1}-8\gamma u_j^{n+1}+4\gamma u_{j+1}^{n+1}}{\Delta x^2}+1\\
+&\implies& u_j^n&=-4\gamma u_{j-1}^{n+1}+(1+8\gamma) u_j^{n+1}-4\gamma u_{j+1}^{n+1}-\Delta t
+\end{align*}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\section*{}
+\setcounter{section}{7}
+\newpage
+
+   1.0738e-03
+\end{minted}
+Observation: if we set the tolerance to a larger value,
+\texttt{quad} is closer to our results comparing to \texttt{quadl},
+but for $10^{-9}$ it is much smaller.
+
+\subsection{Fitting Functions With One Parameter with Least Squares}
+\hwsec{(a).}
+Goal: minimize the following:
+\begin{align*}
+\psi(c)&=\sum^m_{k=1}{(x_k^2-x_k+c-y_k)}^2\\
+&=\sum^m_{k=1}(c^2 + 2 c x_k^2 - 2 c x_k - 2 c y_k + x_k^4 - 2 x_k^3 - 2 x_k^2 y_k + x_k^2 + 2 x_k y_k + y_k^2)\\
+&\propto\sum^m_{k=1}(c^2 + 2 c x_k^2 - 2 c x_k - 2 c y_k)\\
+&=mc^2+2c\sum^m_{k=1}(x_k^2 - x_k - y_k)
+\end{align*}
+So, the derivative w.r.t. $c$ is:
+\[\frac{\partial\psi(c)}{\partial c}=2mc+2\sum^m_{k=1}(x_k^2-x_k-y_k)\]
+To compute it, we need the value of $\sum^m_{k=1}(x_k^2-x_k-y_k)$, which is $7$.
+Also, $m=3$, so setting the derivative to $0$ gets us:
+\[2\times 3c+2\times 7=0\]
+Hence $c=-\frac73$.
+
+  fr = feval(f, r);
+  if abs(fr) < tol
+    return;
+  end
+
+\subsection{Newton's Method in Matlab}
+Matlab code for \texttt{mynewton.m}:
+\begin{minted}{matlab}
+function x = mynewton(f, df, x0, tol, nmax)
+  % input variables:
+  % f,df are the function f and its derivative f',
+  % x0 is the initial guess,
+  % tol is the error tolerance,
+  % and nmax is the maximum number of iterations.
+  % The output variable:
+  % x is the result of the Newton iterations.
+  x = x0;
+  fprintf('x = %g\n', x);
+  if nmax <= 0
+    return;
+  end
+
+%   % Forward elimination
+%   for j = 1:n - 1
+%     for i = j + 1:n
+%       p = A(i, j) / A(j, j);
+%       A(i, j:n) = A(i, j:n) - p * A(j, j:n);
+%       b(i) = b(i) - p * b(j);
+%     end
+%   end
+%   disp(full(A));
+
+\hwsec{(d).}
+Choice of $x_0$: it cannot be $0$.
+Derivative:
+\[f'(x)=-\frac{2}{x^3}-\frac{1}{R}\]
+Newton's method:
+\[x_{k+1}=
+x_k-\frac{f(x_k)}{f'(x_k)}=
+x_k-\frac{\frac{1}{x_k^2}-\frac{x_k}{R}}{-\frac{2}{x_k^3}-\frac{1}{R}}\]
+
+\fbox{$0\mid0\mid0\mid0\mid0\mid0\mid0\mid0\mid0\mid0\mid0\mid0\mid0\mid0$}
+
+\hwsec{(b).}
+By the Simpson's rule:
+\begin{align*}
+  \int^{0.8}_{0.0} e^{-x}dx&\approx S(f;0.2)\\
+  &=\frac{h}{3}\left(f(x_0)+4\left(f(x_1)+f(x_3)\right)+2 f(x_2)+f(x_4)\right)\\
+  &=0.550676
+\end{align*}
+
+%   % Backward substitution
+%   x = zeros(1, n);
+%   x(n) = b(n) / A(n, n);
+%   for i = n - 1:-1:1
+%     x(i) = (b(i) - sum(A(i, i + 1:n) .* x(i + 1:n))) / A(i, i);
+%   end
+%   disp(x);
+% end
+% \end{minted}
+% Testing script:
+% \begin{minted}{matlabsession}
+% >> format default;
+% >> format compact;
+% >> o = @(a) ones(1, a);
+% >> r = @(n) floor(n / 2);
+% >> blah = @(n) 5 * o(r(n));
+% >> b = @(n) [blah(n) [4] blah(n)];
+% >> runTest = @(n) GXExp(n, 4 * o(n), o(n), b(n));
+% >> runTest(5)
+% \end{minted}
+% Results:
+% \begin{minted}{text}
+% 4.0000         0         0         0    1.0000
+%       0    4.0000         0    1.0000         0
+%       0         0    4.0000         0         0
+%       0         0         0    3.7500         0
+%       0         0         0         0    3.7500
+%   1     1     1     1     1
+% \end{minted}
+% It seems that after forward elimination,
+% the matrix is simplified even further.
+% The top diagonals on both directions are preserved,
+% the bottom-left diagonal is removed,
+% and the bottom-right diagonal seems to be $4-\frac14$.
+
+\section{Problem 4}
+(a) Because $f(x)=\frac{\exp x}{1+\exp x}=1-\frac1{1+\exp x}$,
+and $\exp x>0$, hence $\frac1{1+\exp x}\in(0, 1)$, hence $f(x)\in(0, 1)$
+for $x\in\mathbb R$, making it a reasonable probability.
+
+  fx1 = feval(f, x1);
+  if abs(fx1) < tol
+    return;
+  end
+
+% converting numbers b/t bases
+\subsection{Loss of Significance}\index{loss of significance}
+\subsubsection*{(a).}
+$f(x) = \sqrt{x^2+2x+2}-x-1=\sqrt{x^2+2x+2}-(x+1)$, a subtraction.
+So we need to make $\sqrt{x^2+2x+2}$ and $x+1$ close to each other,
+which means $x^2+2x+2$ and $(x+1)^2$ should be close to each other,
+which means $(x+1)^2+1$ and $(x+1)^2$ should be close to each other,
+and this happens when $|x+1|$ is very large
+(that the difference $1$ is not significant).
+
+\newcommand{\R}{\mathbb{R}}
+\begin{document}
+\maketitle
+\tableofcontents
+
+  for j = 2:n
+    % 2 to n column
+    for i = j:n
+      p = R(i, j - 1) - R(i - 1, j - 1);
+      R(i, j) = R(i, j - 1) + p / (4^(j - 1) - 1);
+    end
+  end
+end
+\end{minted}
+
+The formula does not depend on $x_k$.
+I am not surprised because the average value of $y_k$ seems to be
+the most reasonable horizontal line that fits a set of points.
+
+By hint:
+\begin{align*}
+\frac{L(\hat\theta_1)}{L(\hat\theta_0)}
+&=\frac{\theta_1^{\sum_{i=1}^n X_i}(1-\theta_1)^{n-\sum_{i=1}^n X_i}}{\theta_0^{\sum_{i=1}^n X_i}(1-\theta_0)^{n-\sum_{i=1}^n X_i}}\\
+&= \left(\frac{1 - \theta_0}{1 - \theta_1}\right)^n  \left(\frac{\theta_0 (1 - \theta_1)}{\theta_1 (1 - \theta_0)}\right)^{\sum_{i=1}^n X_i}
+\end{align*}
+Note that \(\left(\frac{1 - \theta_0}{1 - \theta_1}\right)^n\) is a
+known constant and
+\(\frac{\theta_0 (1 - \theta_1)}{\theta_1 (1 - \theta_0)}\) is also a
+known constant. Replacing them with \(u\) and \(v\), we get
+\(\frac{L(\hat\theta_1)}{L(\hat\theta_0)}=u\times v^{\sum_{i=1}^n X_i}\).
+The LRT states that if
+\(\frac{L(\hat\theta_1)}{L(\hat\theta_0)}=u\times v^{\sum_{i=1}^n X_i}>c_0\)
+for some constant \(c_0\), then we reject \(H_0\). So:
+\begin{align*}
+u\times v^{\sum_{i=1}^n X_i}&>c_0\\
+v^{\sum_{i=1}^n X_i}&>\frac{c_0}{u}\\
+{\sum_{i=1}^n X_i}&>\log_v{\frac{c_0}{u}}\\
+\end{align*}
+So, the LRT is to reject \(H_0\) if
+\({\sum_{i=1}^n X_i}>\log_v{\frac{c_0}{u}}\) (where \(c_0,u,v\) are all
+constants, so this expression as a whole is a constant too).
+
+$2$ GHz $\implies$ $0.5$ ns/cycle, restart time $100+1+2=103$ ns.
+We calculate a weighted average:
+
+\begin{document}
+\maketitle
+\tableofcontents
+\section*{}
+\setcounter{section}{8}
+\newpage
+
+\documentclass{amsart}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{amsthm}
+\newtheorem*{remark}{Remark}
+\title{Math 401 Homework 2}
+\author{}
+\email{@psu.edu}
+\begin{document}
+\maketitle
+\tableofcontents
+\section{2.10}
+\subsection{Problem 2.10 (1)}
+Statements (ii), (iii), (v) are true.
+\subsection{Problem 2.10 (2)}
+\begin{proof}
+$$|\xi-x|<\delta\iff-\delta<\xi-x<\delta\iff x\in(\xi-\delta,\xi+\delta)$$
+\end{proof}
+\subsection{Problem 2.10 (3)}
+\begin{itemize}
+\item (i) 1 (smallest), 114, 514, and no maximum.
+\item (ii) 2 (smallest), 114, 514, and 2 as maximum.
+\item (iii) 5 (smallest), 114, 514, and 5 as maximum.
+\item (iv) Not bounded above.
+\item (v) 1 (smallest), 114, 514, and 1 as maximum.
+\end{itemize}
+\subsection{Problem 2.10 (5)}
+$\{4\}$
+\subsection{Problem 2.10 (6)}
+\begin{itemize}
+\item For each $x\in(0,\infty)$, take $y=\frac2x$.
+\item Assume $x\in(0,\infty)$ is the minimum, then $y<x$ while $y\in(0,\infty)$,
+contradicting the fact that $x$ is the minimum.
+\end{itemize}
+\section{2.13}
+\subsection{Problem 2.13 (1)}
+\begin{proof}
+By def. of supremum, $$\forall x\in\S_0,x\leq\sup{S_0}$$
+(and $\sup{S_0}$ is the smallest number satisfying this property),
+and by def. of subset, $x\in S$, therefore $x\leq\sup S$.
+Since $\sup{S_0}$ is the smallest, $\sup{S_0}\leq\sup S$.
+\end{proof}
+\subsection{Problem 2.13 (2)}
+\begin{proof}
+By def. of supremum, $$\forall x\in S,x+\xi\leq\sup_{x\in S}{(x+\xi)}$$
+and $\sup_{x\in S}{x+\xi}$ is the smallest number satisfying this property.
+Similarly, $$\forall x\in S,x+\xi\leq\sup_{x\in S}{x}+\xi$$
+So these two numbers are equal.
+\end{proof}
+\subsection{Problem 2.13 (3)}
+\begin{proof}
+By def. of infimum, $$\forall x\in S,-x\geq\inf_{x\in S}{-x}$$
+and $\inf_{x\in S}{-x}$ is the greatest number satisfying this property.
+Similarly, $$\forall x\in S,-x\geq-\sup_{x\in S}{x}$$
+So these two numbers are equal.
+\end{proof}
+\subsection{Problem 2.13 (4)}
+(i) 1 (ii) 2 (iii) 1 (iv) 0
+\subsection{Problem 2.13 (5)}
+\begin{itemize}
+\item (i) $\xi=3,S=\{2,3\}$
+\item (ii) So, $|\xi-x|=|\sup S-x|=\sup S-x$,
+and we need to show $$\inf_{x\in S}{(\sup S-x)}=0$$
+Assume for the sake of contradiction that $\exists h>0, h$
+being a lower bound of $\sup S-x$, so $h\leq\sup S-x$, thus
+$$x\geq h+\sup S>\sup S$$
+This contradicts the fact that $\sup S$ is a supremum.
+\item (iii, $I$ closed) By def. of $d$,
+$$d(\xi,I)=0\implies \inf_{x\in I}{|x-\xi|}=0$$.
+Since $I$ is closed, $\exists y\in I, |y-\xi|=0$, so $y=\xi$, hence $\xi\in I$.
+\item (iii, $I$ open) Take $\xi=\sup I$. Since $I$ is open, $\xi\notin I$.
+\end{itemize}
+\end{document}
+
+\hwsec{(a).}
+Since there are $5$ points, $L(x)$ consists of $4$ linear segments,
+the $i$-th segment is an interval from $(t_i,y_i)$ to
+$(t_{i+1}, y_{i+1})$ for $i\in\set{0,1,2,3}$.
+Since $1.8\in[1.6,2.0]$, $L(1.8)=\frac{0.8736-0.9751}{2}=-0.0508$.
+
+By the sandwich theorem, $na_{2n}\to0$ when $n\to\infty$.
+\subsection{6.26 (4)}
+It seems that for all $n\in\mathbb N,n\geq2$, there exists a term $\frac1n$
+and another term $\frac{n-1}n$, summing up to $1$. Take this subsequence as $A$.
+
+So, $\sup I$ exists. Suppose sequence $x$ bounded in $I$ that converges to $\sup I$,
+so do its subsequences. This means $\sup I\in I$, so $I$ is bounded above.
+
+Then:
+
+\title{ Homework 4}
+\author{ \\ \texttt{@psu.edu}}
+
+\subsection{The Method of Least Squares in Matlab}
+Matlab code:
+\begin{minted}{matlabsession}
+>> xk = [0:0.1:1];
+>> yk1 = [0.7829 0.8052 0.5753 0.5201];
+>> yk2 = [0.3783 0.2923 0.1695];
+>> yk3 = [0.0842 0.0415 0.009 0];
+>> yk = [yk1 yk2 yk3];
+>> plot(xk, yk, 'o'); hold on;
+>> plt = @(x, n) plot(x, polyval(polyfit(xk, yk, n), x));
+>> plt(linspace(0, 1), 1); hold on;
+>> plt(linspace(0, 1), 2); hold on;
+>> plt(linspace(0, 1), 4); hold on;
+>> plt(linspace(0, 1), 8);
+\end{minted}
+Generated plot:
+\simplot{8.6.png}
+Comments: I feel like higher order plots are likely to be more accurately fitting the data.
+
+\subsection{Simple Cases of Natural Cubic Spline}
+\hwsec{(a).}
+Since there are only two points, only one cubic polynomial need to
+be computed to define $S(x)$, let's call it $S_0(x)$.
+Equations we have are:
+\begin{itemize}
+\item $S_0(t_0)=y_0,S_0(t_1)=y_1$.
+\item $S_0''(t_0)=S_0''(t_1)=z_0=z_1=0$.
+\item $D_0=\frac{y_0}{h_0}-0=\frac{y_0}{t_1-t_0}$.
+\item $C_0=\frac{y_1}{h_0}-0=\frac{y_1}{t_1-t_0}$.
+\end{itemize}
+Then:
+\[\begin{array}{rl}
+S_0(x)&=\frac{0+1}{6h_0}(x-t_0)^3-0+\frac{y_1}{t_1-t_0}(x-t_0)-\frac{y_0}{t_1-t_0}(x-t_1)\\
+&=\frac{1}{6(t_1-t_0)}(x-t_0)^3+\frac{y_1}{t_1-t_0}(x-t_0)-\frac{y_0}{t_1-t_0}(x-t_1)\\
+&=\frac{(x-t_0)^3}{6(t_1-t_0)}+\frac{y_1(x-t_0)}{t_1-t_0}-\frac{y_0(x-t_1)}{t_1-t_0}\\
+&=\frac{(x-t_0)^3}{6(t_1-t_0)}+\frac{y_1(x-t_0)-y_0(x-t_1)}{t_1-t_0}
+\end{array}\]
+So $S(x)=\frac{(x-t_0)^3}{6(t_1-t_0)}+\frac{y_1(x-t_0)-y_0(x-t_1)}{t_1-t_0}$ for $x\in[t_0,t_1]$.
+
+Therefore \(\fbox{$\hat\theta_{MLE}\sim N(0, \frac{2\theta^2}n)$}\) (as
+\(n\) increases).
+
+\lstset{style=mystyle}
+
+\hwsec{(a).}
+Gaussian elimination. Result of forward elimination:
+\[\bkarr{ccc}{
+  4    & 3       & 0\\
+  0.75 & 1.75    & -1\\
+  0    & -0.5714 & 3.4286
+}\times\bkarr{c}{x_1\\x_2\\x_3}=
+\bkarr{c}{24\\12\\-17.1429}\]
+Results of backward substitution:
+\[\bkarr{c}{x_1\\x_2\\x_3}=\bkarr{c}{3\\4\\-5}\]
+\hwsec{(b).}
+Jacobi's method, start from $x_i=b_i/a_{ii}$:
+\[{\vec x}^0=[6,7.5,-6]\]
+Then, we use the following slightly modified Jacobi iterations
+(convenient for translating to Matlab later on):
+\[x_i^{k+1}=\frac{b_i+a_{ii}x_i^k-\sum^n_{j=1}{a_{ij}x_j^k}}{a_{ii}}\]
+Steps of values of ${\vec x}^k$:
+\begin{itemize}
+\item $0.3750, 1.5000, -4.1250$
+\item $4.8750, 6.1875, -5.6250$
+\item $1.3594, 2.4375, -4.4531$
+\item $4.1719, 5.3672, -5.3906$
+\item $1.9746, 3.0234, -4.6582$
+\item $3.7324, 4.8545, -5.2441$
+\item $2.3591, 3.3896, -4.7864$
+\item $3.4578, 4.5341, -5.1526$
+\item $2.5995, 3.6185, -4.8665$
+\item $3.2861, 4.3338, -5.0954$
+\item $2.7497, 3.7616, -4.9166$
+\item $3.1788, 4.2086, -5.0596$
+\item $2.8435, 3.8510, -4.9478$
+\item $3.1118, 4.1304, -5.0373$
+\item $2.9022, 3.9069, -4.9674$
+\item $3.0698, 4.0815, -5.0233$
+\item $2.9389, 3.9418, -4.9796$
+\end{itemize}
+Works extremely bad: converges very slowly.
+After $18$ iterations, it's still slow.
+
+I think the answers are obvious enough to find (just scroll to the last
+line of the answers), so I decide to not circling them.
+
+\subsection{Jacobi iterations in Matlab}
+Content of \texttt{jacobi.m}:
+\begin{minted}{matlab}
+function [x, nit] = jacobi(A, b, x0, tol, nmax)
+  % tol: error tolerance
+  % nmax: max number of iterations
+  % A, b: the matrix system
+  % x0: initial guess
+  % x: solution
+  % nit: number of iterations used
+  x = x0;
+  n = length(x);
+  nit = 0;
+
+\subsection{The Lorenz system; A study in chaoes}
+\hwsec{(i).}
+Let $x=y=z=0$, then $\dot x=\dot y=\dot z=0$, so the system is consistent,
+hence an equilibrium.
+
+\hwsec{(b).}
+Code for testing for (i):
+\begin{minted}{matlabsession}
+>> format short e;
+>> R = romberg('sin', 0, pi, 4)
+>> err = diag(R) - 2
+\end{minted}
+Results from Matlab:
+\begin{minted}[fontsize=\small]{text}
+ans =
+
+\subsection{Basic Systems of Linear Equations}
+\hwsec{(a).} The system can be rewritten as the following matrix equation:
+\[\bkarr{ccc}{1&4&a\\2&-1&2a\\a&3&1}\bkarr{c}{x_1\\x_2\\x_3}=\bkarr{c}{6\\3\\5}\]
+Solve for the equation, the results vary depending on the value of $a$.
+In case of $a\ne\pm1$:
+\begin{equation}\label{eq:1a-sol1}
+\bkarr{c}{x_1\\x_2\\x_3}=\bkarr{c}{\frac2{a+1}\\1\\\frac2{a+1}}
+\end{equation}
+In case $a=1$:
+\begin{equation}\label{eq:1a-sol2}
+\bkarr{c}{x_1\\x_2}=\bkarr{c}{2-x_3\\1}
+\end{equation}
+So:
+\begin{itemize}
+\item If $a=0$, the solution is unique by~\cref{eq:1a-sol1}.
+\item If $a=1$, the value of $x_1$ can be arbitrary, hence infinitely many by~\cref{eq:1a-sol2}.
+\item If $a=-1$, $x_1$ and $x_3$ are undefined by~\cref{eq:1a-sol1}.
+\end{itemize}
+If we replace the right hand sides with zeros:
+\[\bkarr{ccc}{1&4&a\\2&-1&2a\\a&3&1}\bkarr{c}{x_1\\x_2\\x_3}=\bkarr{c}{0\\0\\0}\]
+The solution still depends on the value of $a$.
+In case of $a\ne\pm1$:
+\begin{equation}\label{eq:1a-sol3}
+\bkarr{c}{x_1\\x_2\\x_3}=\bkarr{c}{0\\0\\0}
+\end{equation}
+In case $a=\pm1$:
+\begin{equation}\label{eq:1a-sol4}
+\bkarr{c}{x_1\\x_2}=\bkarr{c}{-ax_3\\0}
+\end{equation}
+So:
+\begin{itemize}
+\item If $a=0$, the solution is unique by~\cref{eq:1a-sol3}.
+\item If $a=\pm1$, the value of $x_1$ can be arbitrary, hence infinitely many by~\cref{eq:1a-sol4}.
+\end{itemize}
+
+\begin{longtable}[]{@{}cccccc@{}}
+\toprule
+& O & A & B & AB & \(X_{i+}\) \\
+\midrule
+\endhead
+Rh.positive & 78 & 85 & 58 & 23 & 244 \\
+Rh.negative & 12 & 25 & 10 & 9 & 56 \\
+\(X_{+j}\) & 90 & 110 & 68 & 32 & 300 \\
+\bottomrule
+\end{longtable}
+
+\hypertarget{problem-5}{%
+\section{Problem 5}\label{problem-5}}
+
+% x^2 + 2x + 1 ==> r1, r2 = -1
+% x^2 - 3x + 2 ==> r1 = 1, r2 = -2
+\end{minted}
+Testing commands (tested twice):
+\begin{minted}{matlab}
+>> [r1, r2] = quadroots(1, 2, 1)
+>> [r1, r2] = quadroots(1, -3, 2)
+\end{minted}
+Testing output, respectively:
+\begin{minted}{text}
+r1 =
+
+\subsubsection*{(a).} $z=xy$, so:
+\begin{align*}
+  fl(z)&=fl(fl(x)\times fl(y))\\
+  &=fl(x(1+\delta_x)\times y(1+\delta_y))\\
+  &=xy(1+\delta_x)(1+\delta_y)(1+\delta_z)\\
+  &=xy(1+\delta_x+\delta_y+\delta_z+\delta_y\delta_z+\delta_x\delta_z
+        +\delta_x \delta_y+\delta_x \delta_y\delta_z)\\
+  &\approx xy(1+\delta_x+\delta_y+\delta_z)
+\end{align*}
+Thus:
+\begin{itemize}
+\item Absolute error: $fl(z)-z=xy(\delta_x+\delta_y+\delta_z)$
+  \begin{itemize}
+  \item For $x$: $xy\delta_x$
+  \item For $y$: $xy\delta_y$
+  \item Propagated: $xy(\delta_x+\delta_y)$
+  \item Round off: $xy\delta_z$
+  \end{itemize}
+\item Relative error: $\frac{fl(z)-z}z=\delta_x+\delta_y+\delta_z$
+  \begin{itemize}
+  \item Propagated: $\delta_x+\delta_y$
+  \item Round off: $\delta_z$
+  \end{itemize}
+\end{itemize}
+\subsubsection*{(b).} $z=5x+7y$, so:
+\begin{align*}
+  fl(z)&=fl(5fl(x)+ 7fl(y))\\
+  &=(5x(1+\delta_x)+7y(1+\delta_y))(1+\delta_z)\\
+  &=5x(1+\delta_x)(1+\delta_z)+7y(1+\delta_y)(1+\delta_z)\\
+  &\approx 5x(1+\delta_x+\delta_z)+7y(1+\delta_y+\delta_z)\\
+  &=5x(1+\delta_x)+7y(1+\delta_y)+(5x+7y)\delta_z\\
+\end{align*}
+Thus:
+\begin{itemize}
+\item Absolute error: $fl(z)-z=5x\delta_x+7y\delta_y+(5x+7y)\delta_z$
+  \begin{itemize}
+  \item For $x$: $5x\delta_x$
+  \item For $y$: $7y\delta_y$
+  \item Propagated: $5x\delta_x+7y\delta_y$
+  \item Round off: $(5x+7y)\delta_z$
+  \end{itemize}
+\item Relative error: $\frac{fl(z)-z}z=\frac{5x\delta_x+7y\delta_y}{5x+7y}+\delta_z$
+  \begin{itemize}
+  \item Propagated: $\cfrac{5x\delta_x+7y\delta_y}{5x+7y}$
+  \item Round off: $\delta_z$
+  \end{itemize}
+\end{itemize}
+
+\subsection{Linear Shooting Method for a Two-point Boundary Value Problem}%
+\label{sub:1}
+\hwsec{(a).}
+Let $y(x) = -\frac{\sin(x) + 3 \cos(x)}{10}$, so:
+\begin{align*}
+  y'(x) &=\frac{1}{10} (-\cos(x) + 3 \sin(x))\\
+  y''(x) &=\frac{1}{10} (\sin(x) + 3 \cos(x))
+\end{align*}
+Bringing these values into both the equation, the boundary conditions,
+\textit{and} the initial conditions, all reach an equilibrium.
+
+\section{Source Code}
+\lstinputlisting[language=Verilog]{../Lab1.srcs/sources_1/new/main.v}
+\section{Test Bench Code}
+\lstinputlisting[language=Verilog]{../Lab1.srcs/sim_1/new/tb.v}
+
+\title{ Lab3 Report}
+\author{ \\ {@psu.edu}}
+
+\section{Problem 2}
+\section{Problem 3}
+(a) The fact that $\epsilon_i\sim N(0, \sigma^2)$ independently.
+
+\title{ Homework 2}
+\author{ \\ \texttt{@psu.edu}}
+
+err =
+
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage{ifxetex,ifluatex}
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
+\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\ifluatex
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+\usepackage{mathpazo}
+
+\section{Computer B}
+
+\subsubsection*{(c).}
+Content of file \texttt{smartquadroots.m}:
+\begin{minted}{matlab}
+function [r1, r2] = smartquadroots(a, b, c)
+% input: a, b, c: coefficients for the polynomial ax^2+bx+c=0.
+% output: r1, r2: The two roots for the polynomial.
+  rt = sqrt(b^2 - 4 * a * c);
+  r1 =- (b + rt) / (2 * a);
+  r2 = c / (a * r1);
+end
+\end{minted}
+Testing command (with a standard testing command):
+\begin{minted}{matlab}
+>> [r1, r2] = smartquadroots(3, -123454321, 2)
+>> roots([3, -123454321, 2])
+\end{minted}
+Testing output:
+\begin{minted}{text}
+r1 =
+
+Then we take \(\ln\) to get \(\ell(\lambda)\) and its derivatives:
+
+\hwsec{(b).}
+Let $\Delta x=\frac{1}{M}$,$x_j=j\Delta x$ for $j\in[0, M]$,
+and let $t_0=0$, $t_n=n\Delta t$ for $n\geq 0$,
+the analytical solution $u(t,x)$ satisfies (``maximum principle''):
+\begin{equation}\label{eqn:1}
+  \min_{y\in[0,1]}u(t_1,y)\leq u(t_2,x)\leq \max_{y\in[0,1]}u(t_1,y)
+\end{equation}
+By~\cref{eqn:1} we have for $t_1\leq t_2$,
+\begin{equation}\label{eqn:2}
+  \max_{x\in[0,1]}\abs{u(t_2,x)}\leq \max_{x\in[0,1]}u(t_1,x)
+\end{equation}
+By~\cref{eqn:2} we have for the same condition,
+The maximal of $\abs{u(t,x)}$ is non-increasing over time $t$.
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\setcounter{enumi}{1}
+\tightlist
+\item
+  By \(\chi^2=\sum_{i, j}\frac{(X_{i,j}-E_{i, j})^2}{E_{i, j}}\),
+\end{enumerate}
+
+\subsection{Gaussian Elimination in Matlab}
+For \texttt{0.2:0.2:1}, we use the following matlab script:
+\begin{minted}{matlabsession}
+>> format compact;
+>> format long;
+>> c = 0.2:0.2:1;
+>> A = vander(c);
+>> b = A * ones(size(c'));
+>> naiv_gauss(A, b)
+>> A \ b
+\end{minted}
+Answer from matlab:
+\begin{minted}{text}
+ans =
+   0.999999999999612
+   1.000000000000889
+   0.999999999999494
+   1.000000000000104
+   0.999999999999993
+ans =
+   1.000000000000031
+   0.999999999999925
+   1.000000000000065
+   0.999999999999977
+   1.000000000000003
+\end{minted}
+Observation:
+I think the equations are solved in different orders,
+so that the errors are different.
+Also, the pivoting version has slightly smaller errors.
+
+\section*{}
+\setcounter{section}{1}
+\subsection{Converting Numbers Between Bases}
+\subsubsection*{(a).}
+(i). $(110111001.101011101)_2=1+0\times2+0\times2^2+1\times2^3+...+1\times2^8+1\times 2^{-1}+0\times 2^{-2}+...+1\times 2^{-9}=(441.681640625)_{10}$
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\item
+  Since \(\hat\lambda_{MLE}=\overline Y\),
+  \(\hat\lambda=\frac{\sum^n_{i=1} Y_i}{n}=\frac{12+2\times 6}{50}=\frac{24}{50}=0.48\).
+\item
+  Under \(H_0\), the values of \(p_i\) are:
+\end{enumerate}
+
+\subsubsection*{(c).}
+By previous results $(64.625)_{10}=(1000000.101)_2=+(1.000000101)_2\times 2^6$ (scientific normalized notation).
+Then we calculate the single-precision floating point representation.
+\begin{itemize}
+\item $r=000000101$
+\item $n=6$, in 32-bit $c=127$ so biased exponent is $(133)_{10}=(10000101)_2$
+\item $s=0$
+\end{itemize}
+So the result is (broken into two lines):
+
+\title{ Final Lab Report}
+\author{ \\ {@psu.edu}}
+
+  -2.0000e+00
+   9.4395e-02
+  -1.4293e-03
+   5.5500e-06
+\end{minted}
+The error gets much smaller and smaller when $n$ gets large.
+
+\subsection{Romberg Algorithm in Matlab}
+\hwsec{(a).}
+Matlab code for \texttt{romberg} function:
+\begin{minted}[fontsize=\small]{matlab}
+function R = romberg(f, a, b, n)
+  % feval(s, a): call the function `f(a)`
+  % [a, b]: the interval of integration
+  R = zeros(n, n);
+  h = b - a;
+  R(1, 1) = (feval(f, a) + feval(f, b)) * h / 2;
+
+\hwsec{(a).}
+Matlab code:
+\begin{minted}{matlabsession}
+>> format compact;
+>> f = @(x) exp(-x)-cos(x);
+>> f(1.1) * f(1.6)
+\end{minted}
+Result:
+\begin{minted}{text}
+ans =
+   -0.0279
+\end{minted}
+The result is less than zero.
+
+  -1
+
+Hence the following system:
+For $i\in[0, 5],j\in[0, 5]$,
+\begin{align*}
+  u_{0,j}&=0&u_{5,j}&=j\\
+  u_{i,0}&=0&u_{i,5}&=i
+\end{align*}
+And for the rest,
+\begin{align*}
+4u_{1,1}-u_{2,1}-u_{1,2}&=-\frac{1}{25}\\
+4u_{1,2}-u_{2,2}-u_{1,1}-u_{1,3}&=-\frac{1}{25}\\
+4u_{1,3}-u_{2,3}-u_{1,2}-u_{1,4}&=-\frac{1}{25}\\
+4u_{1,4}-u_{2,4}-u_{1,3}-1&=-\frac{1}{25}
+\end{align*}
+\begin{align*}
+4u_{2,1}-u_{1,1}-u_{3,1}-u_{2,2}&=-\frac{1}{25}\\
+4u_{2,2}-u_{1,2}-u_{3,2}-u_{2,1}-u_{2,3}&=-\frac{1}{25}\\
+4u_{2,3}-u_{1,3}-u_{3,3}-u_{2,2}-u_{2,4}&=-\frac{1}{25}\\
+4u_{2,4}-u_{1,4}-u_{3,4}-u_{2,3}-2&=-\frac{1}{25}
+\end{align*}
+\begin{align*}
+4u_{3,1}-u_{2,1}-u_{4,1}-u_{3,2}&=-\frac{1}{25}\\
+4u_{3,2}-u_{2,2}-u_{4,2}-u_{3,1}-u_{3,3}&=-\frac{1}{25}\\
+4u_{3,3}-u_{2,3}-u_{4,3}-u_{3,2}-u_{3,4}&=-\frac{1}{25}\\
+4u_{3,4}-u_{2,4}-u_{4,4}-u_{3,3}-3&=-\frac{1}{25}
+\end{align*}
+\begin{align*}
+4u_{4,1}-u_{3,1}-1-u_{4,2}&=-\frac{1}{25}\\
+4u_{4,2}-u_{3,2}-2-u_{4,1}-u_{4,3}&=-\frac{1}{25}\\
+4u_{4,3}-u_{3,3}-3-u_{4,2}-u_{4,4}&=-\frac{1}{25}\\
+4u_{4,4}-u_{3,4}-4-u_{4,3}-4&=-\frac{1}{25}
+\end{align*}
+
+\section{Computer A}
+
+\subsection{Matlab Exercises}
+Nothing to turn in here.
+
+\hwsec{(c).}
+So $\tan x=x\implies \tan x -x=0$,
+hence the following code for testing:
+\begin{minted}{matlabsession}
+>> format compact;
+>> f = @(x) tan(x) - x;
+>> bisection(f, 1, 2, 1e-6, 100)
+>> tan(ans)
+\end{minted}
+Result:
+\begin{minted}{text}
+ans =
+    1.5708
+ans =
+    1.6331
+\end{minted}
+The answer seems strange because the solved \texttt{ans} does not quite satisfy
+$\tan{\texttt{ans}}=\texttt{ans}$.
+The reason is that there is actually no root.
+
+\subsubsection*{(c).}
+(i). $\frac13+\frac34$. By rounding to $5$ significant digits,
+$\frac13=0.33333$, $\frac34=0.75000$,
+so the result is $0.33333+0.75000=1.08333\approx 1.0833$.
+
+\hwsec{(i) (b).} Iteration from $x_0=1.1$ to $x_4$:
+\[\begin{array}{rll}
+  x_1&=\frac{7 x_0+1}{8}&=1.0875\\
+  x_2&=\frac{7 x_1+1}{8}&=1.0765625\\
+  x_3&=\frac{7 x_2+1}{8}&=1.0669921875\\
+  x_4&=\frac{7 x_3+1}{8}&=1.0586181640625
+\end{array}\]
+
+\subsection{Comparing various methods}
+The system as a matrix equation:
+\[\bkarr{ccc}{
+  4 &  3 &  0\\
+  3 &  4 & -1\\
+  0 & -1 &  4
+}\times\bkarr{c}{x_1\\x_2\\x_3}=
+\bkarr{c}{24\\30\\-24}
+\]
+
+\subsubsection*{(b).}
+\newcommand{\fracStep}[2]{\underline{#1}.#2 & \times 2 \\}
+
+(b) To compute asymptotic distribution, we need from homework 1 that
+\(\ell'(\theta)=\frac1{\theta^2}\sum^n_{i=1}\frac{X_i^2}{2a_i}-\frac n{2\theta}\)
+Fisher's information:
+
+\subsection{Least Squares for Over-determined Systems}
+\hwsec{(a).}
+Error formula:
+\[\psi(\vec x)=\sum^m_{k=0}{\left(\sum^n_{j=0} (a_{kj}x_j-b_k)\right)}^2\]
+Derivative formulae are for every $i\in[0, n]$:
+\[\frac{\partial \psi(\vec x)}{\partial x_i}=\sum^m_{k=0}{2a_{ki}\left(\sum^n_{j=0} (a_{kj}x_j-b_k)\right)}\]
+We need to make all of them $0$. Hence $\forall i\in[0, n]$:
+\begin{align*}
+  \sum^m_{k=0}{a_{ki}\left(\sum^n_{j=0} (a_{kj}x_j-b_k)\right)}&=0\\
+  \sum^m_{k=0}{a_{ki}\left(\left(\sum^n_{j=0} (a_{kj}x_j)\right)-(n+1)b_k\right)}&=0
+\end{align*}
+constitute the normal equations.
+
+\subsection{Theory of Polynomial Interpolation}
+There are $4$ points in total, written as $(x_i,y_i)^3_{i=0}$,
+so $n=3$, so by the uniqueness of polynomial interpolation,
+there is only one polynomial of degree $\leq 3$ that can be fitted.
+
+\end{document}
+
+
+        2629
+\end{minted}
+
+   0.550678206059886   0.550672828430556
+\end{minted}
+Real value for the integration (last step computed in Matlab):
+\begin{align*}
+\int^{0.8}_{0.0} e^{-x}dx=-\exp(-0.8)-(-\exp(0.0))=0.550671035882778
+\end{align*}
+Absolute errors:
+\[\begin{array}{c|c|c}
+n&\text{abs. error}&\text{decrease}\\\hline
+4&0.001834347570474&N/A\\
+8&0.000458816066020&3.9980\\
+16&0.000114718352630&3.9995\\
+32&0.000028680484366&3.9999\\
+64&0.000007170177108&4.0000\\
+128&0.000001792547778&4.0000
+\end{array}\]
+Plot:
+\simplot{4.3.png}
+For every doubling of $n$, the error decreases by a factor approximately $4$.
+I do not expect this because the error is a function of factor $h^3$, so if we make
+$h$ half as small, the error will be $\frac1{2^3}=\frac18$ time as large,
+but actually it's just $\frac14$ as large.
+
+   4.1151e+07
+\end{minted}
+The last result is very bad because the subtraction has lost us a lot of significant digits.
+
+The formulae are, given $n$ odd:
+\begin{align*}
+d_1x_1+a_nx_n&=b_1 & d_2x_2+a_{n-1}x_{n-1}&=b_2\\
+\cdots& & \cdots& \\
+d_ix_i+a_{n+1-i}x_{n+1-i}&=b_i & d_{i+1}x_{i+1}+a_{n-i}x_{n-i}&=b_{i+1}\\
+\cdots& & \cdots& \\
+d_{\frac{n+1}2}x_{\frac{n+1}2}&=b_{\frac{n+1}2} &\cdots&\\
+\cdots && d_nx_n+a_1x_1&=b_n \\
+\end{align*}
+So $x_{\frac{n+1}2}=\frac{b_{\frac{n+1}2}}{d_{\frac{n+1}2}}$,
+and all other equations can be classified as groups of $2$:
+\begin{align*}
+d_1x_1+a_nx_n&=b_1 & d_nx_n+a_1x_1&=b_n \\
+d_2x_2+a_{n-1}x_{n-1}&=b_2 & d_{n-1}x_{n-1}+a_2x_2&=b_{n-1}\\
+\end{align*}
+So, for $i<\frac{n+1}2$, we have the following relevant equations:
+\begin{align*}
+d_ix_i+a_{n+1-i}x_{n+1-i}&=b_i\\
+a_ix_i+d_{n+1-i}x_{n+1-i}&=b_{n+1-i}
+\end{align*}
+This corresponds to the following linear equation:
+\[\bkarr{cc}{d_i&a_{n+1-i}\\ a_i&d_{n+1-i}}
+\bkarr{c}{x_i\\x_{n+1-i}}=\bkarr{c}{b_i\\b_{n+1-i}}\]
+Hence the following Matlab code:
+\begin{minted}{matlab}
+function x = GaussianX(n, d, a, b)
+  % function x=GaussianX(n,d,a,b)
+  % input: n: system size, must be odd
+  %        (d,a,b): vectors of length n
+  % output: x=solution
+  x = zeros(1, n);
+  m = (n + 1) / 2;
+  x(m) = b(m) / d(m);
+
+\[P\left(-1.96<\frac{\bar X-\lambda}{\sigma}<1.96\right)=0.95\]
+
+\subsection{Finite Difference, Taylor Series and Local Truncation Error}
+
+   1.0738e-03
+
+\hwsec{(b).}
+We first reorganize the equations:
+\[u''=6x^3-6u\]
+By the exact solution, the initial conditions can be
+\begin{align*}
+  u(0) &= 0\\
+  u(1) &= 0\\
+\end{align*}
+Hence $u'(1)=2$, but it doesn't matter.
+The initial guesses are:
+\begin{align*}
+  \bar   u(0) &= 0 & \bar   u'(0) &= 0\\
+  \tilde u(0) &= 0 & \tilde u'(0) &= 1\\
+\end{align*}
+Then we just imitate~\cref{sub:1} to find the solution.
+
+\noindent\textbf{Simple plot.}
+\begin{minted}{matlabsession}
+>> grid on;
+>> xlabel('xs');
+>> ylabel('ys');
+>> title('Made in Heaven');
+\end{minted}
+There is nothing interesting to show.
+
+The new total \(\chi^2\) is \(10.9381\), thus
+\(P(\chi^2_3>10.9381)\approx 0.012\%<\alpha\), the result is much
+smaller and is now significant.
+
+\tableofcontents
+
+\subsection{The Method of Least Squares with Polynomial Regression}
+I have decided to switch to $0$-based indexing, because we are computer scientists.
+
+\begin{document}
+\maketitle
+\tableofcontents
+\section*{}
+\setcounter{section}{9}
+\newpage
+
+\section{Value in register t7}
+It's 0x00002710 in hexadecimal, which is 10000 in decimal.
+
+\usepackage{amsmath}
+\usepackage{mathpazo}
+\usepackage{cleveref}
+\usepackage{minted}
+\usepackage{braket}
+\usepackage{graphicx}
+
+\subsection{More Practice on Linear Shooting Method}
+\hwsec{(a).}
+Let $u(x)=x^3-x$, so:
+\begin{align*}
+  u'(x) &= 3x^2-1\\
+  u''(x) &= 6x
+\end{align*}
+Bringing these values into both the equation, the boundary conditions,
+\textit{and} the initial conditions, all reach an equilibrium.
+
+Show $\abs{f'(x) - D_h(x)} \le C h^2$ where $f$ smooth and
+\begin{equation}\label{eqn:1.4-dh}
+f'(x)\approx D_h(x)=\frac1{2h}\left(-3f(x)+4f(x+h)-f(x+2h)\right)
+\end{equation}
+Observe that:
+\begin{align}\label{eqn:1.4-expand}
+\begin{split}
+&-3f(x)+4f(x+h)-f(x+2h)\\
+=&-\left(4f(x)-4f(x+h)\right)+\left(f(x)-f(x+2h)\right)\\
+=&-4\left(f(x)-f(x+h)\right)+\left(f(x)-f(x+2h)\right)
+\end{split}
+\end{align}
+From the slides, there are $\frac{f(x+h)-f(x)}{h}=f'(x)+\mathcal O(h)$
+and $\frac{f(x+h)-f(x-h)}{2h}=f'(x)+\mathcal O(h^2)$.
+From that we can deduce the following:
+\begin{align*}
+\frac{f(x+2h)-f(x)}{2h}&=f'(x)+\mathcal O(h^2)+\mathcal O(h^2)&&=f'(x)+\mathcal O(h^2)\\
+\frac{f(x)-f(x+2h)}{2h}&=-\frac{f(x+2h)-f(x+h)}{2h}&&=-f'(x)+\mathcal O(h^2)\\
+\frac{f(x)-f(x+h)}{2h}&=-\frac{f(x+h)-f(x)}{2h}&&=-f'(x)+\mathcal O(h)
+\end{align*}
+Bringing these into~\cref{eqn:1.4-expand,eqn:1.4-dh}:
+\begin{align*}
+D_h(x)&=\frac1{2h}\left(-3f(x)+4f(x+h)-f(x+2h)\right)\\
+&=\frac1{2h}\left(-4\left(f(x)-f(x+h)\right)+\left(f(x)-f(x+2h)\right)\right)\\
+&=-4\frac{f(x)-f(x+h)}{2h}+\frac{f(x)-f(x+2h)}{2h}\\
+&=-4\left(-f'(x)+\mathcal O(h)\right) +\left(-f'(x)+\mathcal O(h^2)\right)\\
+&=\left(-3\times-f'(x)\right) +\mathcal O(h^2)-4\mathcal O(h)\\
+&=3f'(x)+\mathcal O(h^2)-4\mathcal O(h)
+\end{align*}
+Where $3f'(x)+\mathcal O(h^2)-4\mathcal O(h)$ is clearly bounded by $Ch^2$.
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\lstdefinestyle{mystyle}{
+  commentstyle=\color{codegreen},
+  keywordstyle=\color{magenta},
+  stringstyle=\color{codepurple},
+  basicstyle=\ttfamily\footnotesize,
+  breakatwhitespace=false,
+  breaklines=true,
+  captionpos=b,
+  keepspaces=true,
+%  numbers=left,
+%  numbersep=5pt,
+  showspaces=false,
+  showstringspaces=false,
+  showtabs=false,
+  tabsize=2
+}
+
+  while nit < nmax && norm(A * x - b) > tol
+    for i = 1:n
+      aii = A(i, i);
+      s1 = sum(A(i, 1:i - 1)' .* x(1:i - 1));
+      s2 = sum(A(i, i + 1:n)' .* x(i + 1:n));
+      sigma = s1 + s2;
+      new = (b(i) - sigma) / aii;
+      x(i) = x(i) * (1 - w) + w * new;
+    end
+    nit = nit + 1;
+  end
+end
+\end{minted}
+
+\begin{longtable}[]{@{}cccccc@{}}
+\toprule
+& O & A & B & AB & \(X_{i+}\) \\
+\midrule
+\endhead
+Rh.positive & 156 & 170 & 116 & 46 & 488 \\
+Rh.negative & 24 & 50 & 20 & 18 & 112 \\
+\(X_{+j}\) & 180 & 220 & 136 & 64 & 600 \\
+\bottomrule
+\end{longtable}
+
+\hwsec{(b).}
+Second derivative of $S(x)$:
+\begin{align*}
+S(x)&=\barr{cll}{
+    S_0(x)&=ax^3+x^2+cx &x \in [-1,0]\\
+    S_1(x)&=bx^3+x^2+dx &x \in [0,1]}\\
+S'(x)&=\barr{cl}{
+    S_0'(x)&=3ax^2+2x+c\\
+    S_1'(x)&=3bx^2+2x+d}\\
+S''(x)&=\barr{cl}{
+    S_0''(x)&=6ax+2\\
+    S_1''(x)&=6bx+2}
+\end{align*}
+First of all, $S_0$ and $S_1$ are both cubic polynomials.
+Equations we have:
+\begin{itemize}
+\item $S_0(0)=S_1(0)$ and $S_0''(0)=S_1''(0)$ says nothing.
+\item $S_0'(0)=S_1'(0) \implies c=d$.
+\item $S''(-1)=0\implies a=\frac13$, $S''(1)=0\implies b=-\frac13$
+\end{itemize}
+So, for any assignment of $c$, we let $d=c$, $a=\frac13$, $b=-\frac13$,
+and this will make $S(x)$ a valid natural cubic spline.
+
+And the test statistic is
+\(\chi^2=\sum^n_{i=1}\frac{(Y_i-np_i)^2}{np_i}\) with degrees of freedom
+\(3-1-1=1\), so:
+
+\hwsec{(b).}
+Goal: minimize the following:
+\begin{align*}
+\psi(\kappa)&=\sum^m_{k=1}{(\kappa\log{\abs{x_k}}-y_k)}^2=\sum^m_{k=1}(\kappa^2\log{\abs{x_k}}^2-y_k^2)\\
+&=\kappa^2\sum^m_{k=1}\log{\abs{x_k}}^2-\sum^m_{k=1}y_k^2
+\end{align*}
+Derivative:
+\[\frac{\partial\psi(\kappa)}{\partial \kappa}=2\kappa\sum^m_{k=1}\log{\abs{x_k}}^2\]
+Hence $\kappa=0$ minimizes the error.
+
+\subsection{Gaussian Quadrature and Beyond}
+\hwsec{(a).}
+In case of $4$ points, we have $N=3$, and
+\[\int^1_{-1} f(x)dx\approx \sum^3_0 a_i f(x_i)\]
+For polynomials of degree $<7$ ($\leq 6$), we only need to check with
+$f(x)=1, x^2, x^4, x^6$ (other cases follow straightforwardly by symmetries):
+\begin{align*}
+f(x)&=1 & 2a_0+2a_1&=2\\
+f(x)&=x^2 & \sum^3_{i=0} a_i x_i^2&=\frac23\\
+f(x)&=x^4 & \sum^3_{i=0} a_i x_i^4&=\frac25\\
+f(x)&=x^6 & \sum^3_{i=0} a_i x_i^6&=\frac27
+\end{align*}
+And they all hold by the given values of $a_i$ and $x_i$,
+and all polynomials of degree $\leq 6$ can be regarded as linear combinations
+of $f(x)=1, x, x^2, \cdots, x^6$, which will respect the above equations.
+
+So, $c^2+d^2-2cd=|c|^2+|d|^2-2|cd|$, and since $|cd|=|c|\cdot|d|$ (theorem 1.16),
+we get $(c-d)^2=(|c|^2+|d|^2-2|c|\cdot|d|)=(|c|-|d|)^2$.
+
+Solve for \(\ell'(\lambda)=0\) gets
+\(\fbox{$\hat\lambda_{MLE}=\frac1{\bar X}$}\).
+
+\hypertarget{problem-1}{%
+\section{Problem 1}\label{problem-1}}
+
+\begin{align*}
+L(\lambda)&=\prod^n_{i=1}\lambda e^{-\lambda x_i}
+=\left(\prod^n_{i=1}\lambda\right)e^{-\lambda\sum^n_{i=1}x_i}
+\end{align*}
+
+\subsection{Practice on Polynomial Interpolations}
+\textbf{(a).} Assuming $\begin{array}{c|c|c|c|c}
+x&0&2&3&4\\\hline y&7&11&28&63
+\end{array}$, we can compute $l_0$ to $l_3$:
+\begin{align*}
+l_0(x)&=\frac{(x-2)(x-3)(x-4)}{(0-2)(0-3)(0-4)}=-\frac{x^3-9x^2+26x-24}{24}\\
+l_1(x)&=\frac{(x-0)(x-3)(x-4)}{(2-0)(2-3)(2-4)}=\frac{x^3-7x^2+12x}{4}\\
+l_2(x)&=\frac{(x-2)(x-0)(x-4)}{(3-2)(3-0)(3-4)}=-\frac{x^3-6x^2+8x}{3}\\
+l_3(x)&=\frac{(x-2)(x-3)(x-0)}{(4-2)(4-3)(4-0)}=\frac{x^3-5x^2+6x}{8}
+\end{align*}
+And then we use these to compute $P_3(x)$:
+\begin{align*}
+P_3(x)={}&l_0(x)y_0+l_1(x)y_1+l_2(x)y_2+l_3(x)y_3\\
+=&-\frac{x^3-9x^2+26x-24}{24}\times 7
+  +\frac{x^3-7x^2+12x}{4}\times 11\\
+  &-\frac{x^3-6x^2+8x}{3}\times 28
+  +\frac{x^3-5x^2+6x}{8}\times 63\\
+={}&x^3-2x+7
+\end{align*}
+
+Also, $(-1)^n=\pm1$, so $\limsup{(-1)^n}=1$ and $\liminf{(-1)^n}=-1$, thus:
+\begin{enumerate}
+\item (i) $\limsup{(-1)^n(1+n^{-1})}\to1\cdot1=1$
+\item (ii) $\liminf{(-1)^n(1+n^{-1})}\to-1\cdot1=-1$
+\end{enumerate}
+\section{5.21}
+\subsection{5.21 (1)}
+\begin{proof}
+%So, $a\in(0,1)\implies a^n\to0$ when $a\to\infty$,
+%which means $\forall \epsilon>0,\exists N,\forall n>N,a^n<\epsilon$.
+By triangle inequality (suppose $n>m$):
+\begin{align*}
+|x_n-x_m|&\leq\sum_{i=m}^{n-1}{x_{i+1}-x_i}\\
+&\leq\sum_{i=m}^{n-1}{a^i}\\
+&<\sum_{i=m}^{n-1}{a^{n-1}}\\
+&=(n-m-1)a^{n-1}
+\end{align*}
+And $(n-m-1)a^{n-1}$ converges to $0$ for $n\to\infty$ and any $m$,
+so $\forall \epsilon>0,\exists N,\forall n>N,(n-m-1)a^{n-1}<\epsilon$,
+which means $|x_n-x_m|<\epsilon$, which means the sequence $\langle x\rangle$ is Cauchy.
+\end{proof}
+\subsection{5.21 (4)}
+\begin{proof}
+Since $\langle x\rangle$ is bounded in $[a,b]$, it has a converging subsequence,
+and since the elements in its subsequences are all within $[a,b]$, it converges
+to a point in $[a,b]$.
+\end{proof}
+\subsection{5.21 (5)}
+\begin{proof}
+$I$ is bounded because otherwise a diverging sequence could be bounded in $I$.
+
+\subsection{SOR with Jacobi iterations}
+\hwsec{(a).}
+Still using the adapted version:
+\[x_i^{k+1}=(1-\omega)x_i^k+\omega\times\frac{b_i+a_{ii}x_i^k-\sum^n_{j=1}{a_{ij}x_j^k}}{a_{ii}}\]
+Note that:
+\[a_{ii}x_i^k-\sum^n_{j=1}{a_{ij}x_j^k}=-\sum^n_{j=1,j\ne i}{a_{ij}x_j^k}\]
+
+\hwsec{(b).} Apply Heun's method:
+\begin{align*}
+x_{k+1}&=x_k+\frac{1}{2}(K_1+K_2)\\
+K_1&=h\times f(t_k,x_k)\\
+K_2&=h\times f(t_k+h,x_k+K_1)\\
+f(t, x)&=2x^2+x-1
+\end{align*}
+Iteration for $x_1$:
+\begin{align*}
+K_1&=0.1\times 2=0.2\\
+K_2&=0.1\times (2\times 1.2^2+1.2-1)=0.308\\
+x_1&=1+\frac{0.2+0.308}{2}=1.254
+\end{align*}
+Iteration for $x_2$:
+\begin{align*}
+K_1&\approx0.3399, K_2\approx0.5675\\
+x_2&=1.254+\frac{0.3399+0.5675}{2}=1.7077
+\end{align*}
+Hence $x_2=1.7077$.
+
+\hwsec{(b).}
+Code for testing $[0,1]$:
+\begin{minted}{matlabsession}
+>> format compact;
+>> f = @(x) 9 * x^4 + 18 * x^3 + 38 * x^2 - 57 * x + 14;
+>> bisection(f, 0, 1, 1e-6, 100)
+\end{minted}
+Result:
+\begin{minted}{text}
+Error using bisection
+f(a) * f(b) > 0
+\end{minted}
+Code for testing $[0,0.5]$:
+\begin{minted}{matlabsession}
+>> format compact;
+>> f = @(x) 9 * x^4 + 18 * x^3 + 38 * x^2 - 57 * x + 14;
+>> bisection(f, 0, 0.5, 1e-6, 100)
+\end{minted}
+Result:
+\begin{minted}{text}
+ans =
+    0.3333
+\end{minted}
+Code for testing $[0.5,1]$:
+\begin{minted}{matlabsession}
+>> format compact;
+>> f = @(x) 9 * x^4 + 18 * x^3 + 38 * x^2 - 57 * x + 14;
+>> bisection(f, 0.5, 1, 1e-6, 100)
+\end{minted}
+Result:
+\begin{minted}{text}
+ans =
+    0.6667
+\end{minted}
+
+\begin{longtable}[]{@{}llll@{}}
+\toprule
+\(i\) & \(1\) & \(2\) & \(3\) \\
+\midrule
+\endhead
+\(p_i\) & 0.619 & 0.297 & 0.084 \\
+\(50p_i\) & 30.95 & 14.85 & 4.20 \\
+\bottomrule
+\end{longtable}
+
+Answer for (d) \texttt{A \textbackslash{} b([0 10 10 0])} from matlab:
+\begin{minted}{text}
+ans =
+   (1,1)    -14.142135623730953
+   (2,1)     10.000000000000000
+   (4,1)    -20.000000000000004
+   (5,1)     14.142135623730951
+   (6,1)     10.000000000000000
+   (8,1)    -20.000000000000000
+  (10,1)     20.000000000000000
+  (11,1)     10.000000000000000
+  (12,1)    -10.000000000000000
+  (13,1)    -14.142135623730949
+  (14,1)     20.000000000000000
+  (15,1)     10.000000000000000
+  (16,1)    -14.142135623730949
+  (17,1)     10.000000000000000
+\end{minted}
+
+\begin{document}
+\maketitle
+\tableofcontents
+
+\hwsec{(b).}
+Suppose the function is $f(x)=b$, and we minimize:
+\[\psi(0, b)={(1.4-b)}^2+{(1.5-b)}^2+{(1.4-b)}^2\]
+Simplified:
+\[\psi(0, b)=3 b^2 - 8.6 b + 6.17\]
+Hence when $b=\frac{43}{30}$, $\psi(0, b)$ is minimized,
+which means $f(x)=\frac{43}{30}$ is the best fit.
+
+\usepackage{amsmath}
+\usepackage{mathpazo}
+\usepackage{cleveref}
+\usepackage{minted}
+\usepackage{braket}
+\usepackage{graphicx}
+\usepackage{tikz}
+
+\begin{align*}
+I(\lambda)&=-E\left(\ell''(\lambda)\right)=-E\left(-\frac n{\lambda^2}\right)\\
+&=E\left(\frac{n}{\lambda^2}\right)=\fbox{$\frac{n}{\lambda^2}$}\\
+\end{align*}
+
+I didn't find a way to make a red circle in \LaTeX, so I used a
+black square instead.
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\setcounter{enumi}{1}
+\tightlist
+\item
+\end{enumerate}
+
+r2 =
+
+\begin{align*}
+f(\mu\mid x)&=\int_{\R^-}\left(\sigma^{-\frac{n+1}2}\right)^2e^{-\frac Q{2\sigma^2}}\left(-\frac Q{2\omega^2}\right) d\omega\\
+&=\frac Q 2^{-n/2}\int_{\R^+}\omega^{\frac{n+2}2}\omega^{-2}e^{-\omega}d\omega\\
+&\propto Q^{-n/2}\int_{\R^+}\omega^{\frac{n-2}2}e^{-\omega}d\omega\\
+&\propto Q^{-n/2}\\
+&\propto \fbox{$\left(1+\frac{n(\bar X-\mu)^2}{(n-1)s^2}\right)^{-n/2}$}
+\end{align*}
+
+\subsection{Numerical Integration and Extrapolation}
+Matlab code for the function:
+\begin{minted}{matlab}
+function v = funItg4(x)
+    if x == 0
+        v = 1;
+    else
+        v = sin(x) ./ x;
+    end
+end
+\end{minted}
+\hwsec{(a).}
+Script for computing the integration:
+\begin{minted}{matlabsession}
+>> [trapezoid('funItg4', 0, 1, 1)
+    trapezoid('funItg4', 0, 1, 3)
+    trapezoid('funItg4', 0, 1, 9)]
+\end{minted}
+Results from Matlab:
+\begin{minted}{text}
+ans =
+
+\subsection{Higher Order ODEs with various methods}
+Formulae and configurations:
+\begin{align*}
+  x_1'(t)&=x_2 & x_1(0)&=1 \\
+  x_2'(t)&=t\times x_1 & x_2(0)&=1
+\end{align*}
+With $h=0.1$.
+\hwsec{(a).} Euler's method (using the obvious formula).
+\begin{align*}
+  x_1(0.1)&=x_0+h\times f(0,1)=1+0.1*1=1.1\\
+  x_2(0.2)&=x_1+h\times f(0,1.1)=1.1+0.1=1.2
+\end{align*}
+
+\hwsec{(c).}
+Goal: minimize the following:
+\begin{align*}
+\psi(\beta)&=\sum^m_{k=1}{(\log(\beta\abs{x_k})-y_k)}^2=\sum^m_{k=1}{(\log(\beta)+\log(\abs{x_k})-y_k)}^2\\
+&=\sum^m_{k=1}(2 \log(\beta) \log(\abs{x_k}) - 2 y_k\log(\abs{x_k})+\log^2(\abs{x_k}) + \log^2(\beta) + y_k^2 - 2 y_k \log(\beta))\\
+&\propto\sum^m_{k=1}(2 \log(\beta) \log(\abs{x_k}) + \log^2(\beta) - 2 y_k \log(\beta))\\
+&=2 \log(\beta)\sum^m_{k=1}(\log(\abs{x_k})) + m\log^2(\beta) - 2\log(\beta)\sum^m_{k=1} y_k
+\end{align*}
+Derivative:
+\[\frac{\partial\psi(\beta)}{\partial \beta}=
+\frac2\beta\sum^m_{k=1}(\log(\abs{x_k}))+ m\beta\log^2(\beta)-\frac2\beta\sum^m_{k=1} y_k\]
+Where:
+\[\sum^m_{k=1}(\log(\abs{x_k}))\approx1.7918, \sum^m_{k=1} y_k= 3, m=3\]
+Hence:
+\[\frac{2\times 1.7918}\beta+3\beta\log^2(\beta)-\frac6\beta=0\]
+Result (computed using calculator): $\beta\approx 1.697$
+
+\subsection{A Study on Polynomial Interpolation in Matlab}
+\textbf{Preparation (a).}
+The $4\times 4$ matrix given is a Van der Monde matrix,
+so it can be used for interpolation.
+
+\subsection{Sharpening Your Matlab Skills} 
+Content of file \texttt{myValue.m}:
+\begin{minted}{matlab}
+function v = myValue(a, b)
+% input: a: vector
+% b: vector (same length as a)
+% output: v: the computed value
+  res = 0;
+  for i = 1:length(a)
+    for j = 1:i
+      res = res + b(i) * b(i) * a(j);
+    end
+  end
+  v = res;
+end
+\end{minted}
+Testing commands:
+\begin{minted}{matlab}
+>> myValue(1:10, -4:5)
+\end{minted}
+Testing output:
+\begin{minted}{text}
+ans =
+
+Also, $\inf I$ exists. Suppose sequence $x$ bounded in $I$ that converges to $\inf I$,
+so do its subsequences. This means $\inf I\in I$, so $I$ is bounded below.
+
+\hypertarget{problem-2}{%
+\section{Problem 2}\label{problem-2}}
+
+\documentclass{amsart}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{amsthm}
+\usepackage{hyperref}
+\usepackage{mathpazo}
+\usepackage{tikz-cd}
+\usetikzlibrary{calc}
+\usetikzlibrary{decorations.pathmorphing}
+% A TikZ style for curved arrows of a fixed height, due to AndréC.
+\tikzset{curve/.style={settings={#1},to path={(\tikztostart)
+	.. controls ($(\tikztostart)!\pv{pos}!(\tikztotarget)!\pv{height}!270:(\tikztotarget)$)
+	and ($(\tikztostart)!1-\pv{pos}!(\tikztotarget)!\pv{height}!270:(\tikztotarget)$)
+	.. (\tikztotarget)\tikztonodes}},
+	settings/.code={\tikzset{quiver/.cd,#1}
+		\def\pv##1{\pgfkeysvalueof{/tikz/quiver/##1}}},
+	quiver/.cd,pos/.initial=0.35,height/.initial=0}
+\newtheorem*{remark}{Remark}
+\title{Math 401 Midterm}
+\author{}
+\email{@psu.edu}
+\begin{document}
+\maketitle
+\tableofcontents
+\section{Acknowledgment}
+I have referred to my previous homework writeups and the textbook.
+\section{Solutions}
+\begin{enumerate}
+\item $|x|+1>0$ thus it's equivalent to $|x-1|<|x|+1$, which by simple enumeration solves to $x>0$.
+$\inf A=0$ and it's not a minimum (since when $x=0$,
+$\frac{|x-1|}{|x|+1}=1$ which means $0\notin A$).
+\item
+	\begin{enumerate}
+	\item $\sqrt n$ increases as $n$ increases $\implies \frac2{\sqrt n}$ increases as $n$
+	increases $\implies -\frac2{\sqrt n}$ increases as $n$ decreases.
+	So, the upper and lower bounds of $n$ decide the lower and upper bounds of $B$. Say $b\in B$,
+	take $n=1$ get $b=1-2=-1$ and take $n\to\infty$ get $b\to1$. So, $-1$ and $1$ are lower and
+	upper bounds of $B$, which means $B$ is bounded both above and below.
+	\item As constructed above.
+	\item As constructed above.
+	\item No, because there is no such $n$ that makes $b=1$ (or equivalently, $1\notin B$).
+	\end{enumerate}
+\item By def. of divergence, $\sqrt n$ doesn't converge to a real number, so we assume for the
+sake of contradiction that $\sqrt n$ converges to $p\in\mathbb R^*$, but then $2p\in\mathbb R^*$
+also exists in the sequence where $2p>p$ since we can take $4n$, leading to a contradiction.
+\item
+	\begin{enumerate}
+	\item Since for $n=1$, $x_n>0$, and for $n>1$, $n-1>0$, and by induction $x_{n-1}>0$ so
+	multiplying it by a positive number gives another positive number, hence $x_n>0$.
+	\item Since $x_{n+1}=\frac{(n+1)-1}{(n+1)+1}x_n=\frac{n}{n+2}x_n$ and for $n\in\mathbb N$,
+	$n+2>n>0$, so $\frac{n}{n+2}\in(0, 1)$, which by multiplying it, one gets smaller.
+	So $x_{n+1}\leq x_n$.
+	\item Basically, $x_n=1\cdot\frac13\cdot\frac24\cdot\frac35\cdot\frac46
+	\cdots\frac{n-1}{n+1}=\frac2{(n+1)n}=\frac2{n^2+n}$. When $n\to\infty$, $x_n\to0$.
+	\item As constructed above.
+	\end{enumerate}
+\item
+	\begin{enumerate}
+	\item Converges by ratio test: we test $k=\lim_{n\to\infty}\frac{2n^2-1}{2(n+1)^2-1}$,
+	and evidently $2n^2-1\leq 2(n+1)^2-1$, so $k<1$, thus converges.
+	\item Converges by ratio test: $\frac{n+1}{n^2-1}=\frac{n+1}{(n+1)(n-1)}=\frac1{n-1}$, so we test
+	$k=\lim_{n\to\infty}\frac{n-1}{n}$ and it follows that $k<1$, thus converges.
+	\item Converges by ratio test: so, \begin{align*}
+	&\frac{(2(n+1))!}{5^{n+1}(n+1)!^2}\cdot\frac{5^nn!^2}{(2n)!}\\
+	=&\frac{5^n(2n+2)!n!^2}{5^n5(n+1)!^2(2n)!}\\
+	=&\frac{(2n+2)!n!^2}{5(n+1)!^2(2n)!}\\
+	=&\frac{(2n+2)(2n+1)(2n)!n!^2}{5(n+1)^2n!^2(2n)!}\\
+	=&\frac{(2n+2)(2n+1)}{5(n+1)^2}
+	\end{align*}
+	Then, by $\lim_{n\to\infty}\frac{(2n+2)(2n+1)}{5(n+1)^2}=\frac45<1$
+	the original series converges.
+	\item Diverges by root test: so $\sqrt[n]{|(-1)^{n-1}\frac{\sqrt n}{n+1}|}=
+	\sqrt[n]{\frac{\sqrt n}{n+1}}=\frac{n+1}{\sqrt n}^n$, and
+	$\limsup_{n\to\infty}\frac{n+1}{\sqrt n}^n$ divergence as $n+1>\sqrt n$,
+	so the series diverges.
+	\item Diverges. Similar to the last one,
+	we test $\limsup_{n\to\infty}\frac{n+1}{n}^n$ and it divergence as
+	$n+1>n$, so the series still diverges.
+	\item Converges. Similar to $(c)$, we test $\lim_{n\to\infty}\frac{(2n+2)(2n+1)}{4(n+1)^2}=
+	\frac{4n^2+6n+2}{4n^2+8n+4}<1$, so the series converges.
+	\end{enumerate}
+\end{enumerate}
+\end{document}
+
+\hwsec{(c).}
+So we are given the following points:
+\[\begin{array}{|c||c|c|c|}\hline
+x&0&1&2\\\hline
+y&0^6=0&1^6=1&2^6=64\\\hline
+\end{array}\]
+These points are uniformly distributed, so we can apply the formulae computed from (b)
+to get $\textbf{H}$ and $\vec v$:
+\[\textbf{H}=[4h]=[4]~\text{and}~
+\vec v=\frac 6h[y_2+y_0-2y_1]=6[64+0-2]=[372]\]
+So by $\textbf{H}\cdot [z_1]=\vec v$, $z_1=93$.
+And $z_0=z_2=0$, so:
+\begin{align*}
+S_i(x)&=\frac{z_{i+1}}{6h}(x-t_i)^3-\frac{z_i}{6h}(x-t_{i+1})^3+(\frac{y_{i+1}}{h}-\frac{h}{6}z_{i+1})(x-t_i)\\
+&-(\frac{y_i}{h}-\frac{h}{6}z_i)(x-t_{i+1})\\
+&=\frac{z_{i+1}}{6}(x-t_i)^3-\frac{z_i}{6}(x-t_{i+1})^3+({y_{i+1}}-\frac{z_{i+1}}{6})(x-t_i)
+-({y_i}-\frac{z_i}{6})(x-t_{i+1})\\
+S_0(x)&=\frac{31}{2}x^3-\frac{29}{2}x\\
+S_1(x)&=\frac{93}{6}(2-x)^3+64(x-1)+(1-\frac{93}{6})(2-x)=31-\frac{215 x}2 + 93 x^2 - \frac{31 x^3}2
+\end{align*}
+So the answer is
+\[S(x)=\barr{cll}{
+   & \frac{31}{2}x^3-\frac{29}{2}x &x\in[0,1]\\
+   & - \frac{31 x^3}2+ 93 x^2 -\frac{215 x}2 +31&x\in[1,2]}\]
+
+\section{Problem 1}
+\begin{align*}
+Cov(\overline Y, \hat{\beta_1})
+&=Cov(\frac{\sum_i Y_i}n, \sum_i W_i Y_i)\\
+&=\frac1n Cov(\sum_i Y_i, \sum_i W_i Y_i)\\
+&=\frac1n \sum_i W_i \times Var(Y_i)\\
+&=\frac{\sigma^2}n \sum_i W_i=0
+\end{align*}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\section*{}
+\setcounter{section}{11}
+\newpage
+
+\documentclass{amsart}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{amsthm}
+\usepackage{hyperref}
+\usepackage{mathpazo}
+\usepackage{tikz-cd}
+\usetikzlibrary{calc}
+\usetikzlibrary{decorations.pathmorphing}
+% A TikZ style for curved arrows of a fixed height, due to AndréC.
+\tikzset{curve/.style={settings={#1},to path={(\tikztostart)
+    .. controls ($(\tikztostart)!\pv{pos}!(\tikztotarget)!\pv{height}!270:(\tikztotarget)$)
+    and ($(\tikztostart)!1-\pv{pos}!(\tikztotarget)!\pv{height}!270:(\tikztotarget)$)
+    .. (\tikztotarget)\tikztonodes}},
+    settings/.code={\tikzset{quiver/.cd,#1}
+        \def\pv##1{\pgfkeysvalueof{/tikz/quiver/##1}}},
+    quiver/.cd,pos/.initial=0.35,height/.initial=0}
+% TikZ arrowhead/tail styles.
+\tikzset{tail reversed/.code={\pgfsetarrowsstart{tikzcd to}}}
+\tikzset{2tail/.code={\pgfsetarrowsstart{Implies[reversed]}}}
+\tikzset{2tail reversed/.code={\pgfsetarrowsstart{Implies}}}
+% TikZ arrow styles.
+\tikzset{no body/.style={/tikz/dash pattern=on 0 off 1mm}}
+\newtheorem*{remark}{Remark}
+\title{Math 401 Homework 7}
+\author{}
+\email{@psu.edu}
+\begin{document}
+\maketitle
+\tableofcontents
+\section{7.16}
+\subsection{7.16 (1)}
+Graph (it's tikzcd!!):
+% https://q.uiver.app/?q=WzAsMTEsWzAsNF0sWzgsNCwieCJdLFsyLDVdLFsyLDAsInkiXSxbMCwzLCIyIl0sWzMsMiwiXFxidWxsZXQiXSxbMyw0XSxbMywxXSxbMywzLCJcXGNpcmMiXSxbOCwyLCI1Il0sWzMsNSwiMSJdLFswLDFdLFsyLDNdLFs1LDYsIiIsMix7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6Im5vbmUifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFs4LDcsIiIsMix7InN0eWxlIjp7ImJvZHkiOnsibmFtZSI6Im5vbmUifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFs3LDEwLCIiLDIseyJzdHlsZSI6eyJib2R5Ijp7Im5hbWUiOiJkYXNoZWQifSwiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFs0LDEzLCIiLDIseyJsZXZlbCI6MSwic3R5bGUiOnsiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dLFsxNCw5LCIiLDIseyJsZXZlbCI6MSwic3R5bGUiOnsiaGVhZCI6eyJuYW1lIjoibm9uZSJ9fX1dXQ==
+\[\begin{tikzcd}
+	&& y \\
+	&&& {} \\
+	&&& \bullet &&&&& 5 \\
+	2 &&& \circ \\
+	{} &&& {} &&&&& x \\
+	&& {} & 1
+	\arrow[from=5-1, to=5-9]
+	\arrow[from=6-3, to=1-3]
+	\arrow[""{name=0, anchor=center, inner sep=0}, draw=none, from=3-4, to=5-4]
+	\arrow[""{name=1, anchor=center, inner sep=0}, draw=none, from=4-4, to=2-4]
+	\arrow[dashed, no head, from=2-4, to=6-4]
+	\arrow[no head, from=4-1, to=0]
+	\arrow[no head, from=1, to=3-9]
+\end{tikzcd}\]
+The domain is $\mathbb R$ as it's horizontally defined on a line,
+and the codomain is $\mathbb R$ because the the values are points on a line,
+which is also a real number. Each value in the domain determines only one value in the codomain.
+The range is $\{2,5\}$ and the image at $[1,2]$ is $\{5\}$.
+\subsection{7.16 (2)}
+Graph (still tikzcd!!!):
+\[\begin{tikzcd}
+	&&& y \\
+	\\
+	{} & {} & {} & \bullet && {} & x \\
+	\\
+	&&& {}
+	\arrow[""{name=0, anchor=center, inner sep=0}, from=3-1, to=3-7]
+	\arrow[from=5-4, to=1-4]
+	\arrow[""{name=1, anchor=center, inner sep=0}, "{-1}", draw=none, from=3-4, to=5-4]
+	\arrow[""{name=2, anchor=center, inner sep=0}, "1", draw=none, from=3-4, to=3-6]
+	\arrow[""{name=3, anchor=center, inner sep=0}, "1"{pos=0.4}, no head, from=1-4, to=3-4]
+	\arrow[no head, from=1, to=2]
+	\arrow[no head, from=3, to=2]
+	\arrow[""{name=4, anchor=center, inner sep=0}, "{-1}"{pos=0.4}, draw=none, from=3-2, to=0]
+	\arrow[no head, from=4, to=1]
+	\arrow[no head, from=4, to=3]
+\end{tikzcd}\]
+For all three statements, that $x=0$ corresponds to $y=\pm1$ is a sufficiently nice counterexample
+that verifies all of them. Basically it's not a function at $x=0$, so all statements are verified.
+\subsection{7.16 (3)}
+\begin{enumerate}
+\item $(f\circ g)(x)=\frac{1-4x(1-x)}{1+4x(1-x)} (x\in[0,1])$
+\item $(f\circ g)(x)=\frac{8x-8x^2}{x^2+2x+1} (x\in[0,1])$
+\end{enumerate}
+They are different at, say, $x=1$, so they're different.
+$f^{-1}$ exists by solving $y=\frac{1-x}{1+x}$ which gives $x=\frac{1-y}{1+y}$,
+which means $f^{-1}(x)=\frac{1-x}{1+x}$.
+For $g$, since $g(\frac14)=g(\frac34)$, it does not have an inverse.
+\subsection{7.16 (4)}
+It has no inverse because $y=1$ have two solutions $x=\pm1$.
+The inverse is like that because $(g^{-1}\circ g)(x)=x$ and $(g\circ g^{-1})(x)=x$ for $x\in[0,\infty)$.
+\subsection{7.16 (6)}
+\begin{itemize}
+	\item (i) By 7.13, $\sup_{x\in S}{f(x)}=\sup_{y\in\{f(x):x\in S\}}{y}$,
+	so $\sup_{x\in S}{(f(x)+c)}=\sup_{x\in S}{f(x)}+c$ by the properties of supremum.
+	\item (ii) By definition of supremum, $\forall x\in S, f(x)\leq \sup_{x'\in S}{f(x')}, g(x)\leq\sup_{x'\in S}{g(x)}$, hence $f(x)+g(x)\leq \sup_{x'\in S}{f(x')}+\sup_{x'\in S}{g(x)}$,
+	so $\sup_{x'\in S}{f(x')}+\sup_{x'\in S}{g(x)}$ is an upper bound of the image of $f+g$.
+\end{itemize}
+\end{document}
+
+
+Suppose \(\lambda=\overline Y=0.48\), and we can compute:
+
+Sufficient condition for~\cref{eqn:3}: by $1-4\gamma\geq 0$,
+\begin{equation}\label{eqn:4}
+  \gamma\leq\frac 14\implies\Delta t\leq \frac{\Delta x^2}{4}\
+\end{equation}
+This puts a very strict constraint on the time step size $\Delta t$,
+as shown in the slides.
+
+% where $E_{n+1}=\mathcal O(h^{n+1})$, which means $E_{n+1}\in$
+
+\subsection{More practice on various methods}
+\begin{itemize}
+\item Jacobi iteration:
+\[x_1=0, y_1=1.375,z_1=-0.4286\]
+\item Gauss-Seidel iteration:
+\[x_1=5.25, y_1=3.8125, z_1=-5.0469\]
+\item Error analysis:
+\[\norm{M_J}=\norm{-D^{-1}(L+U)}=
+{\begin{Vmatrix}
+  -2    & -0.75 & 0\\
+  -0.75 &   -2  & 0.25\\
+  0     & 0.25  & -2
+\end{Vmatrix}}\approx 2.79>1\]
+Hence the Jacobi method may not converge.
+\[\norm{M_{GS}}=\norm{-{(D+L)}^{-1}U}\approx
+{\begin{Vmatrix}
+  0.5    & 0.375   &    0 \\
+  -0.188  & 0.36  & -0.125 \\
+  -0.023  & 0.045  &  0.4844
+\end{Vmatrix}}\approx 0.6312<1\]
+Hence the Gauss-Seidel method is converging.
+\end{itemize}
+
+\subsection{The Secant Method in Matlab}
+Matlab code for \texttt{mysecant.m}:
+\begin{minted}{matlab}
+function x = mysecant(f, x0, x1, tol, nmax)
+  % input variables:
+  % f is the function,
+  % x0, x1 are the initial guesses,
+  % tol is the error tolerance,
+  % and nmax is the maximum number of iterations.
+  % The output variable:
+  % x is the result of the Newton iterations.
+  x = x1;
+  fprintf('x = %g\n', x);
+  if nmax <= 0
+    return;
+  end
+
+Critical value \(c\) makes \(P(\chi_1^2> c)=\alpha=0.05\), by
+\href{http://courses.atlas.illinois.edu/spring2016/STAT/STAT200/pchisq.html}{calculator}
+\(c=3.841\). Since \(1.354\leq 3.841\), we do not reject the null
+hypothesis.
+
+\title{ HW 2}
+\author{ \\ \texttt{@psu.edu}}
+\date{\today}
+
+Matlab script using shooting method to find solutions \texttt{x3, y3}
+(\texttt{interp1} is used for linear interpolation
+as a substitute of iteration):
+\begin{minted}{matlabsession}
+>> format compact;
+>> m = @(x, y) [y(2); y(2) + 2 * y(1) + cos(x)];
+>> alpha = -0.3; gamma = -0.1;
+>> gu1 = [0 1]; ab = [0 pi/2];
+>> shootN = @(g, n) ode45(m, ab, [alpha g]);
+>> [x1, y1] = shootN(gu1(1));
+>> [x2, y2] = shootN(gu1(2));
+>> shot = [y1(end, 1), y2(end, 1)];
+>> gu2 = interp1(shot, gu1, gamma, 'linear', 'extrap');
+>> [x3, y3] = shootN(gu2);
+\end{minted}
+Matlab script to generate figures,
+with a comparison between analytic and numerical solutions:
+\begin{minted}{matlabsession}
+>> analX = linspace(0, pi/2, 100);
+>> analY = @(x) -(sin(x) + 3 * cos(x)) / 10;
+>> plot(analX, analY(analX), '-');
+>> hold on;
+>> plot(x3, y3(:, 1), 'o');
+>> legend('Analytic solution', 'Numerical solution');
+\end{minted}
+Generated plot:
+\simplot{1.png}
+
+r1 =
+
+  Columns 5 through 6
+
+  if fr * fa < 0
+    r = bisection(f, a, r, tol, nmax - 1);
+  else
+    r = bisection(f, r, b, tol, nmax - 1);
+  end
+end
+\end{minted}
+
+\begin{abstract}
+This document answers the last question (question 12) in the midterm exam.
+The question is about buying computers on Best Buy.
+In the answers below, I will use \textit{we} to refer to myself.
+\end{abstract}
+
+\title{ Homework 9}
+\author{ \\ \texttt{@psu.edu}}
+
+Doubled expectation:
+
+For $j\in[0, 4],i\in[0, 4]$ we have:
+\begin{align*}
+u(i,0)&=0 & u(i,4)&=0\\
+u(0,j)&=\sin(\pi j) & u(4,j)& =0\\
+\end{align*}
+And
+\[2u_{i-1,j}-6u_{i,j}+2u_{i+1,j}+u_{i,j-1}+u_{i,j+1}=0\]
+For the rest:
+\begin{align*}
+2\sin(1\pi )-6u_{1,1}+2u_{2,1}+u_{1,2}&=0\\
+2\sin(2\pi )-6u_{1,2}+2u_{2,2}+u_{1,1}+u_{1,3}&=0\\
+2\sin(3\pi )-6u_{1,3}+2u_{2,3}+u_{1,2}&=0
+\end{align*}
+\begin{align*}
+2u_{1,1}-6u_{2,1}+2u_{3,1}+u_{2,2}&=0\\
+2u_{1,2}-6u_{2,2}+2u_{3,2}+u_{2,1}+u_{2,3}&=0\\
+2u_{1,3}-6u_{2,3}+2u_{3,3}+u_{2,2}&=0
+\end{align*}
+\begin{align*}
+2u_{2,1}-6u_{3,1}+u_{3,2}&=0\\
+2u_{2,2}-6u_{3,2}+u_{3,1}+u_{3,3}&=0\\
+2u_{2,3}-6u_{3,3}+u_{3,2}&=0
+\end{align*}
+
+\subsection{The Method of Least Squares with Non-polynomial Functions}
+\hwsec{(a).}
+Error formula:
+\[\psi(\alpha, \beta)=\sum^m_{i=0}{(\alpha \sin(x_i)+\beta\cos(x_i)-y_i)}^2\]
+Derivatives:
+\begin{align*}
+\frac{\partial\psi(\alpha, \beta)}{\partial \alpha}&=\sum_{i=0}^3 2(\alpha \sin(x_i)+\beta \cos(x_i)-y_i)\sin(x_i)\\
+\frac{\partial\psi(\alpha, \beta)}{\partial \beta}&=\sum_{i=0}^3 2(\alpha \sin(x_i)+\beta \cos(x_i)-y_i)\cos(x_i)
+\end{align*}
+Both of them should be $0$ for minimization, hence:
+\begin{align*}
+\alpha \sum_{i=0}^3 \sin^2(x_i)+\beta \sum_{i=0}^3 (\sin(x_i)\cos(x_i))&=\sum_{i=0}^3 (\sin(x_i)y_i)\\
+\alpha \sum_{i=0}^3 (\sin(x_i)\cos(x_i))+\beta \sum_{i=0}^3 \cos^2(x_i)&=\sum_{i=0}^3 (\cos(x_i)y_i)
+\end{align*}
+Values we need:
+\begin{align*}
+\sum_{i=0}^3 \sin^2(x_i)&\approx 2.888 & \sum_{i=0}^3 (\sin(x_i)\cos(x_i))&\approx-0.333\\
+\sum_{i=0}^3 (\sin(x_i)y_i)&\approx-0.035 & \sum_{i=0}^3 \cos^2(x_i)&\approx1.112\\
+\sum_{i=0}^3 (\cos(x_i)y_i)&=3.225&&
+\end{align*}
+Solving the equations gets: $\alpha\approx0.334$, $\beta\approx3$.
+
+Observation:
+
+\begin{proof}
+In~\ref{sub:3-6-1}, we already proved that $(1-\frac1n)$ has least upper bound $1$,
+so $-((1-\frac1n)-1)$ has greatest lower bound $-(1-1)=0$.
+\end{proof}
+\subsection{3.6 (4)}
+\begin{proof}
+By Archimedean property, $\exists n\in\mathbb N>\frac1{b-a}$.
+Let $m\in\mathbb N$ be the least integer such that $m>an$, so $m-1\geq an$,
+and $a<\frac mn\leq a+\frac1n<a+(b-a)<b$.
+Let $r=\frac mn$.
+\end{proof}
+
+\begin{itemize}
+\item Miscellaneous instructions: $W_0=0.9$, $V_0=0.5$
+\item TLB hit, L1 cache hit (no need to access memory): $W_1=0.1\times 0.99 \times 0.95$,
+latency: $V_1=1+2=3$
+\item TLB hit, L1 cache miss, no page fault: $W_2=0.1\times 0.99\times 0.05\times 0.99$,
+latency: $V_2=1+2+100=103$
+\item TLB hit, L1 cache miss, page fault: $W_3=0.1\times 0.99\times 0.05\times 0.01$,
+latency: $V_3=1+2+100+103+10000000=10000206$
+\item TLB miss, L1 cache hit (no need to access memory): $W_4=0.1\times 0.01\times 0.95$,
+latency: $V_4=1+2+2=5$
+\item TLB miss, L1 cache miss, no page fault: $W_5=0.1\times 0.01\times 0.05\times 0.99$,
+latency: $V_5=1+2+100+100=203$
+\item TLB miss, L1 cache miss, page fault: $W_6=0.1\times 0.01\times 0.05\times 0.01$,
+latency: $V_6=1+2+100+100+103+10000000=10000306$
+\end{itemize}
+
+  -3.1317e-01
+  -4.4485e-03
+  -1.3621e-04
+  -2.9076e-06
+  -3.1341e-08
+  -1.4555e-10
+  -2.6423e-13
+\end{minted}
+It seems that the errors are very small.
+
+\section*{}
+\setcounter{section}{2}
+\subsection{Practice on Newton's Divided Differences}
+% https://atozmath.com/CONM/NumeDiff.aspx?q=DD
+The completed table:
+\[\begin{array}{c|cccc}
+x&f[]&f[,]&f[,,]&f[,,,]\\\hline
+-1&2\\
+1&-4&-3\\
+3&6&5&2\\
+5&10&2&-0.75&-0.4583
+\end{array}\]
+The polynomial formula obtained is
+\begin{align*}
+  f(x)={}&2 -3(x +1) + 2(x +1)(x -1)\\
+  &-0.4583(x +1)(x -1)(x -3)
+\end{align*}
+
+The other function:
+\begin{minted}{matlabsession}
+>> format compact;
+>> format long e;
+>> f = @(x) exp(-x) - cos(x);
+>> mysecant(f, 1.1, 1.2, 1e-12, 10)
+\end{minted}
+Result:
+\begin{minted}{text}
+x = 1.2
+x = 1.30269
+x = 1.29229
+x = 1.29269
+x = 1.2927
+x = 1.2927
+ans =
+     1.292695719373398e+00
+\end{minted}
+Hence the result: approximately $1.29270$.
+
+\hwsec{(c).}
+Let the function be $f(x)=b$, and we minimize:
+\begin{align*}
+\psi(0, b)&=\sum^m_{k=1}{(y_k-b)}^2=\sum^m_{k=1}{(y_k^2+b^2-2y_k b)}\\
+&=\sum^m_{k=1}y_k^2+m(b^2)-2\sum^m_{k=1}(y_k b)\\
+&=\sum^m_{k=1}y_k^2+m(b^2)-2b\sum^m_{k=1}y_k\\
+&\propto m(b^2)-2b\sum^m_{k=1}y_k=m \left( b^2-2\left(\frac{\sum^m_{k=1}y_k}{m}\right)b \right)
+\end{align*}
+So, when $b=\frac{\sum^m_{k=1}}{m}$, the error is minimized.
+
+\subsection{Trapezoid Rule in Matlab}
+Matlab code for \texttt{trapezoid} function:
+\begin{minted}{matlab}
+function v = trapezoid(s, a, b, n)
+  % feval(s, a): call the function `f(a)`
+  % [a, b]: the interval of integration
+  % n: # of subintervals, so n+1 points
+  h = (b - a) / n;
+  x = a + h:h:b - h;
+  v = ((feval(s, a) + feval(s, b)) / 2 + sum(feval(s, x))) * h;
+end
+\end{minted}
+Matlab code for $f(x)=e^{-x}$ function:
+\begin{minted}{matlab}
+function v = funItg(a)
+  v = exp(-a);
+end
+\end{minted}
+Script for testing:
+\begin{minted}{matlabsession}
+>> format long;
+>> err = zeros(1, 6);
+>> for i = 2:7
+   err(i - 1) = trapezoid('funItg', 0, 0.8, 2.^i);
+   end
+>> err
+\end{minted}
+Matlab output:
+\begin{minted}{text}
+err =
+
+  dx = fx / feval(df, x);
+  x = mynewton(f, df, x - dx, tol, nmax - 1);
+end
+\end{minted}
+Script for computing $\sqrt{2}$:
+\begin{minted}{matlabsession}
+>> format compact;
+>> format long e;
+>> f = @(x) x^2 - 2;
+>> df = @(x) 2 * x;
+>> mynewton(f, df, 1, 1e-12, 10)
+\end{minted}
+Result:
+\begin{minted}{text}
+x = 1
+x = 1.5
+x = 1.41667
+x = 1.41422
+x = 1.41421
+x = 1.41421
+ans =
+     1.414213562373095e+00
+\end{minted}
+Hence the result: approximately $1.41421$.
+
+\begin{align*}
+I(\theta)&=-E(\ell''(\theta))\\
+&=-E\left(\frac n{2\theta^2}-\frac2{\theta^3}\sum^n_{i=1}\frac{X_i^2}{2a_i}\right)
+=-E\left(\frac n{2\theta^2}-\frac1{\theta^3}\sum^n_{i=1}\frac{X_i^2}{a_i}\right)\\
+&=\frac1{\theta^3}E\left(\sum^n_{i=1}\frac{X_i^2}{a_i}\right)-\frac n{2\theta^2}
+=\frac1{\theta^3}E\left(\sum^n_{i=1}\frac{a_i\theta}{a_i}\right)-\frac n{2\theta^2}\\
+&=\frac1{\theta^3}E\left(\sum^n_{i=1}\theta\right)-\frac n{2\theta^2}\\
+&=\frac{n\theta}{\theta^3}-\frac n{2\theta^2}
+=\frac{n}{\theta^2}-\frac n{2\theta^2}=\frac{n}{2\theta^2}\\
+\end{align*}
+
+Answer for (c) \texttt{A \textbackslash{} b([10 0 20 0])} from matlab:s
+\begin{minted}{text}
+ans =
+   (1,1)    -22.627416997969522
+   (2,1)     15.999999999999995
+   (3,1)     10.000000000000000
+   (4,1)    -22.000000000000004
+   (5,1)      8.485281374238571
+   (6,1)     15.999999999999995
+   (8,1)    -21.999999999999996
+   (9,1)     -8.485281374238573
+  (10,1)     28.000000000000000
+  (11,1)     20.000000000000000
+  (12,1)    -14.000000000000000
+  (13,1)    -19.798989873223327
+  (14,1)     28.000000000000000
+  (15,1)     14.000000000000000
+  (16,1)    -19.798989873223327
+  (17,1)     14.000000000000000
+\end{minted}
+
+   3.8348e+07
+
+\title{ Lab5 Report}
+\author{ \\ {@psu.edu}}
+
+\hypertarget{problem-4}{%
+\section{Problem 4}\label{problem-4}}
+
+\hwsec{(b).}
+Matlab code:
+\begin{minted}{matlabsession}
+>> format compact;
+>> ab = [0 pi/2];
+\end{minted}
+
+\documentclass[11pt]{article}
+
+\newpage
+
+$q(x)$ is of degree $4$, so its existence does not break the uniqueness property.
+
+So fpr these $7$ cases, $\sum^6_{i=0}(W_i V_i)=501.26205$ (ns/instruction) is the average latency for each instruction.
+The average CPI is $501.26205\times 0.5=250.631025$.
+
+\hwsec{(a).}
+Let $y=ax+b$, so the error is:
+\[\psi(a, b)=\sum^3_{i=0}{(ax_i+b-y_i)}^2\]
+So the derivatives are:
+\begin{align*}
+\frac{\partial\psi(a, b)}{\partial a}&=\sum_{i=0}^3 2x_i \times (ax_i+b-y_i)\\
+\frac{\partial\psi(a, b)}{\partial b}&=\sum_{i=0}^3 2 \times (ax_i+b-y_i)
+\end{align*}
+Both of them should be $0$ for minimization, hence:
+\begin{align*}
+a\sum_{i=0}^3 x_i^2+b\sum_{i=0}^3 x_i&=\sum_{i=0}^3 (x_i y_i)\\
+a\sum_{i=0}^3 x_i+4b&=\sum_{i=0}^3 y_i
+\end{align*}
+We need some values from the data set:
+\begin{align*}
+\sum_{i=0}^3 x_i^2&=30 & \sum_{i=0}^3 x_i&=10\\
+\sum_{i=0}^3 x_i y_i&=13 &\sum_{i=0}^3 y_i&=4
+\end{align*}
+
+\begin{longtable}[]{@{}lll@{}}
+\toprule
+\(\frac{(X_{i,j}-E_{i, j})^2}{E_{i, j}}\) & Union & Confederate \\
+\midrule
+\endhead
+Killed & 6.9144 & 8.3242 \\
+Wounded & 1.0535 & 1.2683 \\
+Missing/Captured & 48.645 & 58.563 \\
+\bottomrule
+\end{longtable}
+
+\hwsec{(b).}
+Similar to (a), we compute:
+\begin{align*}
+\sum_{i=0}^3 x_i^2&=0.02 & \sum_{i=0}^3 x_i&=0\\
+\sum_{i=0}^3 x_i y_i&=0 &\sum_{i=0}^3 y_i&=4.3
+\end{align*}
+Solving the equations gets: $a=0, b\approx 1.433$.
+
+\hwsec{(d).} Apply the 2-nd order Adams-Bashforth-Moulton method:
+Formula:
+\[x_{n+1}=x_n+\frac{3h\times f(t_n,x_n)}{2}-\frac{h\times f(t_{n-1},x_{n-1})}{2}\]
+Iterations:
+\begin{align*}
+  x_1&=1.254\\
+  x_2&=x_1+\frac{3\times 0.1 f(1.1,1.254)}{2}-\frac{0.1f(1,1)}{2}=1.66385\\
+  x_3&=x_2+\frac{3\times 0.1 f(1.2,1.66385)}{2}-\frac{0.1f(1.1,1.254)}{2}=2.42399
+\end{align*}
+
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[
+]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage{mathpazo}
+\usepackage{ifxetex,ifluatex}
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\ifluatex
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+
+\section*{}
+\setcounter{section}{3}
+\subsection{Working on Splines}
+\textbf{(a).}
+Suppose $S_0(x)=x,S_1(x)=0.5+2(x-0.5),S_3(x)=x+1.5$,
+and they are all linear polynomials.
+
+So we need to calculate
+\(\Lambda(X)=\frac{L(\mu, \sigma_{0,MLE}^2)}{L(\mu, \sigma_{MLE}^2)}\),
+and \(\alpha=P(\Lambda(X)\leq c\mid H_0)\). Note that:
+\begin{align*}
+\hat\sigma_{0,MLE}&=\frac1n\sum(x_i-\mu_0)^2\\
+\hat\sigma_{MLE}&=\frac1n\sum(x_i-\bar x)^2
+\end{align*}
+Using that we can simplify \(\Lambda(X)\):
+\begin{align*}
+\Lambda(X)&=\frac{L(\mu, \sigma_{0,MLE}^2)}{L(\mu, \sigma_{MLE}^2)}\\
+&=\frac{\prod^n_{i=1}\left(
+  \frac{1}{\sqrt{2\pi \sigma_{0,MLE}^2}}
+  \exp{\left(-\frac{(x_i-\mu_0)^2}{2\sigma_{0, MLE}^2}\right)}
+\right)}{\prod^n_{i=1}\left(
+  \frac{1}{\sqrt{2\pi \sigma_{MLE}^2}}
+  \exp{\left(-\frac{(x_i-\bar x)^2}{2\sigma_{MLE}^2}\right)}
+\right)}\\
+&=\frac{(2\pi \sigma_{0,MLE}^2)^{-n/2}
+  \exp{\left(-\frac{\sum^n_{i=1}(x_i-\mu_0)^2}{2\sigma_{0, MLE}^2}\right)}
+}{(2\pi \sigma_{MLE}^2)^{-n/2}
+  \exp{\left(-\frac{\sum^n_{i=1}(x_i-\bar x)^2}{2\sigma_{MLE}^2}\right)}}\\
+&=\left(\frac{\sigma_{0,MLE}^2}{\sigma_{MLE}^2}\right) ^{-n/2}
+  \exp{\left(-\frac{\sum^n_{i=1}(x_i-\mu_0)^2}{2\sigma_{0, MLE}^2}+\frac{\sum^n_{i=1}(x_i-\bar x)^2}{2\sigma_{MLE}^2}\right)}\\
+\end{align*}
+By homework 2 problems, we know that: \[
+-\frac{\sum^n_{i=1}(x_i-\mu_0)^2}{2\sigma_{0, MLE}^2}+\frac{\sum^n_{i=1}(x_i-\bar x)^2}{2\sigma_{MLE}^2}
+=0
+\] This means
+\(\Lambda(X)=\frac{\sigma_{0,MLE}^2}{\sigma_{MLE}^2}^{-n/2}\). Given
+\(H_0\), \(\sigma_{0,MLE}^2=1.2^2\), so
+\(\Lambda(X)=\frac{1.2^2}{\sigma_{MLE}^2}^{-n/2}\).
+The GLRT is to reject $H_0$ if:
+\begin{align*}
+\Lambda(X)&\leq c\\
+\frac{1.2^2}{\sigma_{MLE}^2}^{-n/2}&\leq c\\
+\frac{\sigma_{MLE}^2}{1.2^2}^{n/2}&\leq c\\
+\frac{\sigma_{MLE}^2}{1.2^2}&\leq \sqrt[n/2]c\\
+{\sigma_{MLE}^2}&\leq 1.2^2\sqrt[n/2]c\\
+\end{align*}
+So, the GLRT is to reject $H_0$ if $\sigma_{MLE}^2\leq 1.2^2\sqrt[n/2]c$.
+
+\subsection{Fitting a Constant Function Using Least Squares}
+\hwsec{(a).}
+Suppose the constant function is $f(x)=b$, and the goal is to minimize:
+\[\psi(0, b)={(5/4-b)}^2+{(4/3-b)}^2+{(5/12-b)}^2\]
+Simplified:
+\[\psi(0, b)=3(b^2 - 2b) + \frac{253}{72}\]
+Hence when $b=1$, $\psi(0, b)$ is minimized.
+So, $f(x)=1$ is the best fit for the data.
+
+\hwsec{(b).}
+We start by finding the derivative of the original equation, denoted $\psi$:
+\[\frac{\partial\psi}{\partial c}=\sum_{k=0}^m (-2e^{x_k}(f(x_k)-ce^{x_k}))\]
+To make it $0$, we get:
+\begin{align*}
+c\sum_{k=0}^m e^{2x_k}&=\sum_{k=0}^m e^{x_k}f(x_k)\\
+c&=\frac{\sum_{k=0}^m e^{x_k}f(x_k)}{\sum_{k=0}^m e^{2x_k}}
+\end{align*}
+
+(c) When \(n\) large,
+\(I(\lambda)=I(\hat\lambda_{MLE})=\frac n{1/{\bar X}^2}=n{\bar X}^2\).
+So, \(\sqrt{I(\lambda)}=\) \({\sqrt{n{\bar X}^2}}={\bar X\sqrt n}\). By
+asymptotic normality of MLEs:
+
+Similarly, for Type II, the script for generating the plot is:
+\begin{minted}{matlabsession}
+>> format compact;
+>> ty2 = @(i) 5 * cos((2 * i + 1) * pi / 42);
+>> x = ty2(0:20);
+>> t = -5:0.05:5;
+>> points = polyvalue(divdiff(x, f(x)), x, t);
+>> plot(t, points, t, f(t), t, abs(points - f(t)));
+\end{minted}
+Matlab generated plot:
+\begin{center}
+\includegraphics[width=0.7\textwidth]{2.6c2}
+\end{center}
+The error bound is also small for a similar reason.
+We may observe that the values of the $x$ are similar for both Types,
+using the following script:
+\begin{minted}{matlabsession}
+>> format compact;
+>> ty1 = @(i) 5 * cos(i * pi / 20);
+>> ty2 = @(i) 5 * cos((2 * i + 1) * pi / 42);
+>> x = 0:20;
+>> plot(x, ty1(x), x, ty2(x));
+\end{minted}
+The generated plot is:
+\begin{center}
+\includegraphics[width=0.7\textwidth]{2.6c3}
+\end{center}
+
+\hwsec{(c).}
+I think it behaves poorly for (ii) because the absolute value of the slope of
+$f(x)=\sqrt x$ function gets too large when the number of derivative gets large.
+
+So the total \(\chi^2\) is \(5.469\). Degrees of freedom:
+\((2-1)\times (4-1)=3\). Thus
+\(P(\chi^2_3>5.469)\approx 0.130\%>\alpha\). This indicates that the
+test result is not significant, and the two classifications are likely
+to be independent.
+
+\noindent
+(ii). $(64.625)_{10}$, it is evident that $(64)_{10}=2^6=(1000000)_2$. Fractional part:
+\[\begin{array}{lr}
+0.625 & \times 2 \\
+\fracStep1{25}
+\fracStep0{5}
+\fracStep1{0}
+\end{array}\]
+So $(0.625)_{10}=(0.101)_{2}$, thus the original number equals $(1000000.101)_2$.
+
+  Columns 1 through 4
+
+I think the answers are obvious enough to find (just scroll to the last
+line of the answers), so I decide to not circling them.
+\newpage
+\hypertarget{problem-1}{%
+\section{Problem 1}\label{problem-1}}
+
+  -5.5500e-06
+
+Expected:
+
+The other function:
+\begin{minted}{matlabsession}
+>> format compact;
+>> format long e;
+>> f = @(x) exp(-x) - cos(x);
+>> df = @(x) -exp(-x) + sin(x);
+>> mynewton(f, df, 1.6, 1e-12, 10)
+\end{minted}
+Result:
+\begin{minted}{text}
+x = 1.6
+x = 1.31029
+x = 1.29281
+x = 1.2927
+x = 1.2927
+ans =
+     1.292695719373398e+00
+\end{minted}
+Hence the result: approximately $1.29270$.
+
+\[P\left(-1.96<\frac{\bar X-\lambda}{\sqrt{\bar X}/16}<1.96\right)=0.95\]
+
+\title{ Homework 7}
+\author{ \\ \texttt{@psu.edu}}
+
+So for these $5$ cases, $\sum^4_{i=0}(W_i V_i)=5011.201$ (ns/instruction) is the average latency for each instruction.
+The average CPI is $5011.201\times 1=5011.201$.
+
+Answer for (a) \texttt{A \textbackslash{} b([10 15 0 10])} from matlab:
+\begin{minted}{text}
+ans =
+   (1,1)    -26.870057685088803
+   (2,1)     19.000000000000000
+   (3,1)     10.000000000000000
+   (4,1)    -27.999999999999996
+   (5,1)     12.727922061357855
+   (6,1)     19.000000000000000
+   (8,1)    -27.999999999999996
+   (9,1)      8.485281374238570
+  (10,1)     22.000000000000000
+  (12,1)    -16.000000000000000
+  (13,1)     -8.485281374238570
+  (14,1)     22.000000000000000
+  (15,1)     16.000000000000000
+  (16,1)    -22.627416997969519
+  (17,1)     16.000000000000000
+\end{minted}
+
+\hwsec{(d).}
+Trapezoid rule:
+\[\begin{array}{crl}
+  & \abs{E_T(f;h)}&\leq \frac{0.8-0}{12}\times h^2 \times e^0 \leq 10^{-4} \\
+  \implies& h^2 &\leq \frac{12}{0.8}\times 10^{-4} =0.0015\\
+  \implies& h=\frac{0.8}{n} &\leq 0.0387298\\
+  \implies& n &\geq \frac{0.8}{0.0387298}=20.6559\\
+  \implies& n+1 &\geq 21.6559
+\end{array}\]
+Conclusion: needs at least $22$ points.
+
+Simpson's rule:
+\[\begin{array}{crl}
+  &\abs{E_S(f;h)}&\leq \frac{0.8-0}{180}\times h^4 \times e^0 \leq 10^{-4} \\
+  \implies& h^4 &\leq \frac{180}{0.8}\times 10^{-4} =0.0225\\
+  \implies& h=\frac{0.8}{2n} &\leq 0.387298\\
+  \implies& n &\geq \frac{0.8}{2\times0.0387298}=10.3280\approx 10.4\\
+  \implies& 2n+1 &\geq 21.8
+\end{array}\]
+Conclusion: needs at least $22$ points.
+
+Discrete version of the maximum principle: $\forall n$,
+\begin{equation}\label{eqn:3}
+  \max_j\abs{u_j^{n+1}}\leq \max_{j}\abs{u_j^n}
+\end{equation}
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\item
+  Null: \(H_0:\mu_1-\mu_2=0\), alternative: \(H_1:\mu_1-\mu_2<0\)
+\item
+  Since \(X\sim N(\mu_1,\sigma_1^2)\) and \(Y\sim N(\mu_2,\sigma_2^2)\),
+  so \(\bar X\sim N(\mu_1,\frac{\sigma_1^2}n)\) and
+  \(\bar Y\sim N(\mu_2,\frac{\sigma_2^2}m)\). Thus
+  \((\bar X-\bar Y)\sim N(\mu_1-\mu_2,\frac{\sigma_1^2}n+\frac{\sigma_2^2}m)\),
+  and it can be simplified to
+  \(T:=\frac{(\bar X-\bar Y)-(\mu_1-\mu_2)}{\sqrt{\frac{\sigma_1^2}n+\frac{\sigma_2^2}m}}\sim N(0,1)\).
+\item
+  Rejection region: \(R=\{T:T<c\}\), so it goes from right to left.
+\item
+  Since \(c\) makes \(P(T<c\mid H_0)=\alpha=0.05\), and \(H_0\) makes
+  \(\mu_1=\mu_2\), so it's
+  \(P\left(\frac{\bar X-\bar Y}{\sqrt{\frac{\sigma_1^2}n+\frac{\sigma_2^2}m}}<c\right)=0.05\),
+  so \(c=-1.96\).
+\item
+  So we need to test if
+  \(\frac{\bar X-\bar Y}{\sqrt{\frac{\sigma_1^2}n+\frac{\sigma_2^2}m}}<-1.96\),
+  plugging in that \(\sigma_1=1\), \(\sigma_2=1.5\), \(n=20\), \(m=10\),
+  and \(\bar X=4, \bar Y=7\), we get
+  \(\sqrt{\frac{\sigma_1^2}n+\frac{\sigma_2^2}m}=\sqrt{\frac{1}{20}+\frac{1.5^2}{10}}=0.5244\),
+  and the left-hand-side becomes \(\frac{4-7}{0.5244}\approx-5.7208\).
+\item
+  By (d), we have \(\frac{\bar X-\bar Y}{0.5244}<-1.96\), thus
+  \(\bar X-\bar Y<-3.7376\), so the upper bound is \(-3.7376\).
+  Evidently, \(3-7=-4<-3.7376\), so it supports (e) too.
+\item
+  So \(p=P\left(Z<-5.7208\right)=5.3\times 10^{-9}<\alpha\), so it
+  supports (e, f) too.
+\end{enumerate}
+
+\hwsec{(c).}
+Choice of $x_0$: it needs to be positive.
+Derivative:
+\[f'(x)=\frac 3{x^4}\]
+Newton's method:
+\[x_{k+1}=
+x_k-\frac{f(x_k)}{f'(x_k)}=
+x_k-\frac{1-\frac{R}{x_k^3}}{\frac{3}{x_k^4}}\]
+
+\noindent\textbf{Linear equations.}
+\begin{minted}{matlabsession}
+>> X = transpose([ 1 0 0 0 ; 1 5 25 125
+                 ; 1 10 100 1000 ; 1 15 225 3375])
+>> y = [3 8 -2 9]
+>> a = y / X
+>> check = a * X - y
+\end{minted}
+Selected output. The value of \texttt{check} is supposed to be close to $0$,
+and in fact it is:
+\begin{minted}{text}
+a =
+    3.0000    4.9000   -1.0200    0.0480
+check =
+   1.0e-13 *
+         0    0.0355   -0.1421   -0.5684
+\end{minted}
+
+\newcommand{\abs}[1]{\left|#1\right|}
+\newcommand{\barr}[2]{\left\{
+  \begin{array}{#1}#2\end{array}
+\right.}
+\newcommand{\bkarr}[2]{\left[
+  \begin{array}{#1}#2\end{array}
+\right]}
+\newcommand{\hwsec}[1]{\noindent\textbf{#1}}
+\newcommand{\simplot}[1]{\begin{center}
+  \includegraphics[width=0.7\textwidth]{#1}
+\end{center}}
+\newcommand{\circled}[1]{\tikz[baseline=(char.base)]{
+  \node[shape=circle,draw,inner sep=2pt] (char) {#1};
+}}
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\setcounter{enumi}{2}
+\tightlist
+\item
+  The \(p\)-value is \(P(\chi_1^2>1.354)=0.2446>\alpha\) so we do not
+  reject the null hypothesis.
+\end{enumerate}
+
+\textbf{(b).} Script for generating the plot:
+\begin{minted}{matlabsession}
+>> format compact;
+>> x = -5:0.5:5;
+>> t = -5:0.05:5;
+>> f = @(x) (x.^2 + 1).^(-1);
+>> points = polyvalue(divdiff(x, f(x)), x, t);
+>> tv = f(t);
+>> plot(t, points, t, tv, t, abs(points - tv));
+\end{minted}
+Matlab generated plot:
+\begin{center}
+\includegraphics[width=0.7\textwidth]{2.6b}
+\end{center}
+We can see that the error is small in the middle,
+and gets extremely large at both ends.
+It behaves very poorly at the ends because we have chosen a
+uniform grid for interpolation, and it holds by the slides that
+the upper bound of the error is:
+\[
+  \frac{|f^{(22)}(x)|}{4\times 22}\times 0.5^{22}
+\]
+Apparently, $f^{(22)}(x)$ can get very large:
+\begin{center}
+\includegraphics[width=0.7\textwidth]{derivative.png}
+\end{center}
+So the error can get very large.
+
+\begin{longtable}[]{@{}lll@{}}
+\toprule
+\(E_{i,j}\) & Union & Confederate \\
+\midrule
+\endhead
+Killed & 1982.9 & 1647.1 \\
+Wounded & 9450.2 & 7849.8 \\
+Missing/Captured & 966.87 & 803.13 \\
+\bottomrule
+\end{longtable}
+
+Critical value \(c\) makes \(P(\chi_2^2> c)=\alpha=0.05\), by
+\href{http://courses.atlas.illinois.edu/spring2016/STAT/STAT200/pchisq.html}{calculator}
+\(c=5.991\). Since \(124.77> 5.991\), we reject the null hypothesis.
+
+\hwsec{(d).} Definition of $S(x)$:
+\[S(x)=\barr{cll}{
+    S_0(x)&=x+1 &x \in [-2,-1)\\
+    S_1(x)&=a(x+1)+bx &x \in [-1,0)\\
+    S_2(x)&=cx+3(x-1) &x \in [0,1]\\
+    S_3(x)&=4 &x \in [1, 2]}\]
+$S(x)$ must be continuous, so:
+\[\begin{array}{lll}
+Q_0(-1)=0=Q_1(-1)&=-b&\implies b=0 \\
+Q_1(0)=a=Q_2(0)&=-3 &\implies a=-3\\
+Q_2(1)=c=Q_3(1)&=4 &\implies c=4
+\end{array}\]
+So, $a=-3,b=0,c=4$ makes $S(x)$ a valid linear spline.
+
+(c) No, and this tells us that $H_0$ is not likely to be true.
+
+\hwsec{(b).}
+Iteration scheme:
+\begin{align*}
+  z_{t+1}&=z_t+0.1(-2z+xt)\\
+  y_{t+1}&=y_t+0.1(z_t)\\
+  x_{t+1}&=x_t+0.1(y_t)
+\end{align*}
+Initial conditions are the same as in (a).
+
+\hypertarget{problem-3}{%
+\section{Problem 3}\label{problem-3}}
+
+Then:
+\begin{align*}
+  4u_{i,j}+{\frac15}^2&=u_{i-1,j}+u_{i+1,j}+u_{i,j-1}+u_{i,j+1}\\
+  4u_{i,j}-u_{i-1,j}-u_{i+1,j}-u_{i,j-1}-u_{i,j+1}&=-\frac{1}{25}
+\end{align*}
+
+\title{ HW 3}
+\author{ \\ \texttt{@psu.edu}}
+\date{\today}
+
+\hwsec{(c).} Definition of $S(x)$:
+\[S(x)=\barr{cll}{
+    S_0(x)&=1+2(x+1)+(x+1)^3 &x \in [-1,0]\\
+    S_1(x)&=3+5x+3x^2 &x \in [0,1]\\
+    S_2(x)&=11+(x-1)+3(x-1)^2+(x-1)^3 &x \in [1,2]}\]
+First of all, $S_0,S_1,S_2$ are all cubic polynomials.
+However, $S_0(0)=1+2+1=4$ while $S_1(0)=3$, $S_0(0)\ne S_1(0)$, so
+$S$ is \textit{not} a cubic spline.
+
+\noindent\textbf{(b).}
+The table obtained from Newton's form:
+\[\begin{array}{c|cccc}
+x&f[]&f[,]&f[,,]&f[,,,]\\\hline
+0&7\\
+2&11&2\\
+3&28&17&5\\
+4&63&35&9&1
+\end{array}\]
+The polynomial formula obtained is:
+\begin{align*}
+f(x)&=7 + 2x + x(x -2) \times 5 + x(x -2)(x -3)\\
+&=x^3-2x+7
+\end{align*}
+Apparently, it's the same as in \textbf{(a)}.
+
+\title{ Homework 5}
+\author{ \\ \texttt{@psu.edu}}
+
+% \[
+%   f_0(x, h)=f(x+h)=\sum_{k=0}^n\frac1{k!}f^{(k)}(x)h^{k}+E_{n+1}
+% \]
+
+  fx = feval(f, x);
+  if abs(fx) < tol
+    return;
+  end
+
+\subsection{FDM for Elliptic Problems in 2D}
+First:
+\begin{align*}
+  \frac{u_{i-1,j}-2u_{i,j}+u_{i+1,j}}{h^2}+\frac{u_{i,j-1}-2u_{i,j}+u_{i,j+1}}{h^2}&=1\\
+  h&=\frac15
+\end{align*}
+
+   2.8284e+00            0            0            0            0            0            0
+   3.0600e+00   3.1371e+00            0            0            0            0            0
+   3.1209e+00   3.1412e+00   3.1415e+00            0            0            0            0
+   3.1364e+00   3.1416e+00   3.1416e+00   3.1416e+00            0            0            0
+   3.1403e+00   3.1416e+00   3.1416e+00   3.1416e+00   3.1416e+00            0            0
+   3.1413e+00   3.1416e+00   3.1416e+00   3.1416e+00   3.1416e+00   3.1416e+00            0
+   3.1415e+00   3.1416e+00   3.1416e+00   3.1416e+00   3.1416e+00   3.1416e+00   3.1416e+00
+
+\hwsec{(i) (c).} Convergence check:
+\[\begin{array}{rl}
+  x_0-x_1&=0.0125\\
+  x_1-x_2&=0.010937\\
+  x_2-x_3&\approx 0.00957\\
+  x_3-x_4&\approx 0.008374
+\end{array}\]
+It looks like it is converging slowly.
+Error of Newton's method:
+\[e_{k+1}=\frac12 e_k^2\abs{g''(\xi)}\]
+Unfortunately, the second derivative of $g$ is:
+\[g''(x)=0\]
+Hence $M=0$ in the following inequality:
+\[e_{k+1}\leq M\times e_k^2\]
+So, the theorem that the function is quadratic convergence
+cannot be applied to our function. The cause is probably
+that $g''(x)=0$.
+
+\section{Source Code}
+\lstinputlisting[language=Verilog]{../Lab0.srcs/sources_1/new/dff3.v}
+\section{Test Bench Code}
+\lstinputlisting[language=Verilog]{../Lab0.srcs/sim_1/new/testbench.v}
+
+And since
+\(\log{\hat\theta}\sim N\left(0, \frac1{I(\log(\theta))}\right)\), it's
+just \(\fbox{$N(0, 2/n)$}\).
+
+$S(x)$ is continuous at inner knots $0.5$ and $2$:
+\[\begin{array}{rllll}
+Q_0(0.5)&=0.5&=Q_1(0.5)&=0.5+0&=0.5\\
+Q_1(2)&=0.5+2(2-0.5)&=Q_2(2)&=2+1.5&=3.5
+\end{array}\]
+So it is a valid linear spline.
+
+\hwsec{(c).}
+Let $y=ax^2+b$, so the error is:
+\[\psi(a, b)=\sum^3_{i=0}{(ax_i+b-y_i)}^2\]
+So the derivatives are:
+\begin{align*}
+\frac{\partial\psi(a, b)}{\partial a}&=\sum_{i=0}^2 2(ax_i^2+b-y_i)x_i^2\\
+\frac{\partial\psi(a, b)}{\partial b}&=\sum_{i=0}^2 2(ax_i^2+b-y_i)
+\end{align*}
+Both of them should be $0$ for minimization, hence:
+\begin{align*}
+a\sum_{i=0}^2 x_i^4+b\sum_{i=0}^2 x_i^2&=\sum_{i=0}^2 (x_i^2 y_i)\\
+a\sum_{i=0}^2 x_i^2+3b&=\sum_{i=0}^2 y_i
+\end{align*}
+Values we need:
+\begin{align*}
+  \sum_{i=0}^2 x_i^4&=2 & \sum_{i=0}^2 x_i^2&=2\\
+  \sum_{i=0}^2 (x_i^2 y_i)&=6 & \sum_{i=0}^2 y_i&=6.9
+\end{align*}
+Solving the equations gets: $a=2.1, b=-0.9$.
+
+  for i = 1:n - 1
+    % 1st column recursive trapezoid
+    R(i + 1, 1) = R(i, 1) / 2;
+    h = h / 2;
+
+\newcommand{\abs}[1]{\left| #1 \right|}
+\newcommand{\barr}[2]{\left\{
+  \begin{array}{#1}#2\end{array}
+\right.}
+\newcommand{\bkarr}[2]{\left[
+  \begin{array}{#1}#2\end{array}
+\right]}
+\newcommand{\hwsec}[1]{\noindent\textbf{#1}}
+\newcommand{\simplot}[1]{\begin{center}
+  \includegraphics[width=0.5\textwidth]{#1}
+\end{center}}
+\newcommand{\circled}[1]{\tikz[baseline=(char.base)]{
+  \node[shape=circle,draw,inner sep=2pt] (char) {#1};
+}}
+\newcommand{\norm}[1]{\|{#1}\|}
+
+   2
+\end{minted}
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\setcounter{enumi}{2}
+\tightlist
+\item
+  The \(p\)-value is \(P(\chi_2^2>124.77)=8.064\times 10^{-28}<\alpha\),
+  so we reject the null hypothesis.
+\end{enumerate}
+
+\hwsec{(c).} 4nd order Runge-Kutta method.
+For $k=0$:
+\begin{align*}
+  K_1&=K_2=K_3=K_4=0.1\\
+  x_1(0.1)&=1+\frac{0.1+0.2+0.2+0.1}{6}=1.1
+\end{align*}
+For $k=1$:
+\begin{align*}
+  K_1&=K_2=K_3=K_4=0.1\\
+  x_2(0.2)&=1.2
+\end{align*}
+
+\hwsec{(b).}
+Script for testing
+(the first few lines generate $A$ in a smart way):
+\begin{minted}{matlabsession}
+>> format compact;
+>> A = diag(-2.011:-0.001:-2.019);
+>> for i = 1:length(A)-1, A(i+1,i)=1; A(i,i+1)=1; end;
+>> b0 = [-0.994974 1.57407e-3 -8.96677e-4];
+>> b1 = [-2.71137e-3 -4.07407e-3 -5.11719e-3];
+>> b2 = [-5.92917e-3 -6.57065e-3 0.507084];
+>> b = [b0 b1 b2]';
+>> x0 = [0.95:-0.05:0.55]';
+>> [x, nit] = sor(A, b, x0, 1, 3, 1e-4, 100)
+\end{minted}
+Results from Matlab:
+\begin{minted}{text}
+x =
+    0.8294
+    0.6728
+    0.5259
+    0.3849
+    0.2465
+    0.1077
+   -0.0345
+   -0.1833
+   -0.3419
+nit =
+    67
+\end{minted}
+Among other testings (with $\omega=1.1$ to $1.9$),
+the value of \texttt{nit} is the smallest (19) when $\omega=1.5$.
+Plot of number of iterations:
+\simplot{7.3.png}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\section*{}
+\setcounter{section}{5}
+\newpage
+
+\subsection{Heat equation}
+\hwsec{(a).}
+Apply the usual rules, using the notation $\gamma=\frac{\Delta t}{\Delta x^2}$ from the slides, we have:
+\[u_j^{n+1}=4\gamma u_{j-1}^n+(1-8\gamma)u_j^n+4\gamma u_{j+1}^n+\Delta t\]
+For $j=[0, M]$ and $n\geq 0$,
+\[u_j^0=f(x_j)=0,u_0^n=0,u_M^n=0\]
+
+\title{ Lab2 Report}
+\author{ \\ {@psu.edu}}
+
+\hwsec{(e).} Definition of $S(x)$:
+\[S(x)=\barr{cll}{
+   S_0(x) &= x+3 &x\in[-2,-1)\\
+   S_1(x) &= a(x+1)+bx &x\in[-1,0)\\
+   S_2(x) &= cx+2(x-1) &x\in[0,1]\\
+   S_3(x) &= 5 & x\in[1,2]}\]
+To make $S(x)$ continuous, we have:
+\[\begin{array}{lll}
+Q_0(-1)=2=Q_1(-1)&=-b&\implies b=-2 \\
+Q_1(0)=a=Q_2(0)&=-2 &\implies a=-2\\
+Q_2(1)=c=Q_3(1)&=4 &\implies c=5
+\end{array}\]
+So, $a=-2,b=-2,c=5$ makes $S(x)$ a valid linear spline.
+
+(b) So $\frac{\hat{\beta_1}-\beta_1}{\sqrt{\sigma^2/S_{xx}}}\sim N(0, 1)$,
+where $\sigma^2$ can be replaced by $\frac1{n-1}\sum_i(y_i-\hat{y_i})^2$
+which is $221540/99\approx 2237.78$, $S_{xx}=2277.99$,
+so $\sqrt{\sigma^2/S_{xx}}\approx 0.991135$,
+while:
+\begin{align*}
+P\left(-1.96<\frac{10.15-\beta_1}{0.991135}<1.96\right)&\approx 0.95\\
+P\left(-1.9426<{10.15-\beta_1}<1.9426\right)&\approx 0.95\\
+P\left(8.20738<\beta_1<12.0926\right)&\approx 0.95
+\end{align*}
+Hence $\beta_1\in(8.20738, 12.0926)$.
+
+\documentclass{amsart}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{amsthm}
+\newtheorem*{remark}{Remark}
+\title{Math 401 Homework 1}
+\author{}
+\email{@psu.edu}
+\begin{document}
+\maketitle
+\tableofcontents
+\section{1.8 (2)}
+\begin{proof}
+\[ \cfrac a b < \cfrac A B \implies
+bB\cfrac a b < bB\cfrac A B \implies
+aB < bA \]
+\end{proof}
+\begin{proof}
+\begin{align*}
+aB < bA &\implies ab+aB < ab+bA \wedge AB+aB<AB+bA \\
+ &\implies a(b+B)<b(a+A) \wedge B(A+a)<A(B+b)
+\end{align*}
+Also $b>0\wedge B>0\implies b+B>0 \implies b(b+B)>0$, so
+\begin{align*}
+&\cfrac{a(b+B)}{b(B+b)}<\cfrac{b(a+A)}{b(B+b)} \wedge \cfrac{B(A+a)}{b(B+b)}<\cfrac{A(B+b)}{b(B+b)} \\
+\implies &\cfrac a b < \cfrac{a+A}{B+b} \wedge \cfrac{A+a}{B+b} < \cfrac A B\\
+\implies &\cfrac a b < \cfrac{A+a}{B+b} < \cfrac A B
+\end{align*}
+\end{proof}
+\section{1.12 (1)}
+\begin{proof}
+Since $n$ is even, $n=2k$ for some $k\in\mathbb N$,
+hence $x^n=x^{2k}={x^k}^2$. In other words, the equation is essentially ${x^k}^2-y=0$.
+Think of it as an equation w.r.t. $x^k$,
+the discriminant is therefore $B^2-4AC=0-4(1\cdot -y)=y$.
+So, $y<0\implies$ no solution for $x^k$, and $y=0\implies \pm x^k=0\implies x=0$.
+In case $y>0$, $x^k=\pm\sqrt y$.
+By induction on $k$, $k=1\implies x =\pm\sqrt y$ (two solutions)
+and if $x^{k-1}=\pm\sqrt y\implies x=\pm m$ (for some $m\not=0$),
+$x^k=x^{k-1}x=\pm \sqrt{x^2 y}=\pm{\sqrt{m^2 y}}$, also two solutions. 
+\end{proof}
+\begin{proof}
+By induction on the odd number $n$, $n=1\implies$ one solution $x=y$.
+If $\forall z, x^{n-2}=z$ has exactly one solution $o$: if $o=0$ then $x=0$,
+otherwise we take $z=\cfrac{y}{o^2}$ so $o$ for this $z$ is the unique solution.
+\end{proof}
+\begin{remark}
+Orange line for $x^3=y$ and green line for $x^2=y$.
+\begin{center}
+  \includegraphics{hw1.png}
+\end{center}
+\end{remark}
+\section{1.12 (5)}
+\begin{proof}
+So $n=1+1+\cdots+1=a_1\cfrac1{a_1}+a_2\cfrac1{a_2}+\cdots+a_n\cfrac1{a_n}$.
+Let $b_k=\cfrac1{a_k}$, the Cauchy-Schwarz inequality becomes:
+\[(1+1+\cdots+1)^2=n^2\leq(a_1^2+a_2^2+\cdots+a_n^2)
+(\cfrac1{a_1^2}+\cfrac1{a_2^2}+\cdots+\cfrac1{a_n^2})\]
+And divide both sides by $n(a_1^2+a_2^2+\cdots+a_n^2)$
+(which is positive since $n$ and $a_k$ are all positive) gives
+\[\cfrac n{a_1^2+a_2^2+\cdots+a_n^2}\leq
+\cfrac{\cfrac1{a_1^2}+\cfrac1{a_2^2}+\cdots+\cfrac1{a_n^2}}n\]
+where the left-hand-side is $H_n$ and the right-hand-side is $A_n$.
+\end{proof}
+\section{1.20 (2)}
+\begin{proof}
+Since $c^2=|c|^2,d^2=|d|^2$, we know $c^2+d^2=|c|^2+|d|^2$.
+Also since $|x|\geq x$, we know $2|cd|\geq 2cd$, so $-2cd\geq-2|cd|$.
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\tightlist
+\item
+  Under \(M_0\), \(\mu=15\), so \(P(x\mid M_0)\) is just the normal
+  distribution PDF with \(\mu=15\) and \(\sigma^2=2^2\), so:
+\end{enumerate}
+
+   9.2074e-01
+   9.4329e-01
+   9.4577e-01
+\end{minted}
+
+\subsection{Constructing a Linear and a Cubic Spline}
+Given points:
+\[\begin{array}{c|c|c|c|c|c}\hline
+t_i &1.2&1.5&1.6&2.0&2.2  \\ \hline
+y_i &0.4275&1.139&0.8736&-0.9751&-0.1536\\\hline
+\end{array}\]
+
+\begin{longtable}[]{@{}cccccc@{}}
+\toprule
+& O & A & B & AB & \(\chi^2\) \\
+\midrule
+\endhead
+Rh.positive & 146.40 & 178.93 & 110.61 & 52.05 & 2.0418 \\
+Rh.negative & 33.60 & 41.07 & 25.39 & 11.95 & 8.8963 \\
+\bottomrule
+\end{longtable}
+
+    4.1151
+    0.0000
+\end{minted}
+
+Answer for (b) \texttt{A \textbackslash{} b([15 0 0 10])} from matlab:
+\begin{minted}{text}
+ans =
+   (1,1)    -19.798989873223331
+   (2,1)     13.999999999999996
+   (3,1)     15.000000000000000
+   (4,1)    -13.000000000000000
+   (5,1)     -1.414213562373094
+   (6,1)     13.999999999999996
+   (8,1)    -13.000000000000000
+   (9,1)      1.414213562373094
+  (10,1)     11.999999999999998
+  (12,1)    -11.000000000000000
+  (13,1)     -1.414213562373094
+  (14,1)     11.999999999999998
+  (15,1)     11.000000000000000
+  (16,1)    -15.556349186104045
+  (17,1)     11.000000000000000
+\end{minted}
+
+By CRLB, \(S=\sqrt{\frac{1}{I(\lambda)}}\). So we need to compute
+\(I(\lambda)\), which is by the second derivative of the log-likelihood
+function, so according to Poisson's PMF:
+
+\hwsec{(b).}
+Let us denote $x=x_0$, $y=x_1$, so
+$A=\bkarr{cc}{2&3\\1&-4\\2&-1}$ and $b=\bkarr{c}{1\\-9\\-1}$, with $n=1$ and $m=2$.
+Equations:
+\begin{align*}
+  \sum^2_{k=0}{a_{k0}\left(\sum^1_{j=0} (a_{kj}x_j-b_k)\right)}&=0\\
+  \sum^2_{k=0}{a_{k1}\left(\sum^1_{j=0} (a_{kj}x_j-b_k)\right)}&=0\\
+\end{align*}
+So:
+\begin{align*}
+  0&=a_{00}\left(\sum^1_{j=0} (a_{0j}x_j-b_0)\right)+a_{10}\left(\sum^1_{j=0} (a_{1j}x_j-b_1)\right)
+  +a_{20}\left(\sum^1_{j=0} (a_{2j}x_j-b_2)\right)\\
+  &=2\left(\sum^1_{j=0} (a_{0j}x_j-1)\right)+\left(\sum^1_{j=0} (a_{1j}x_j+9)\right)+ 2\left(\sum^1_{j=0} (a_{2j}x_j+1)\right)\\
+  &=2((2x_0-1)+(3x_1-1))+(x_0+9)+(-4x_1+9)+ 2((2x_0+1)+(-x_1+1))
+\end{align*}
+And:
+\begin{align*}
+  0&=3\left(\sum^1_{j=0} (a_{0j}x_j-1)\right)-4\left(\sum^1_{j=0} (a_{1j}x_j+9)\right)-\left(\sum^1_{j=0} (a_{2j}x_j+1)\right)\\
+  &=3((2x_0-1)+(3x_1-1))-4((x_0+9)+(-4x_1+9))-((2x_0+1)+(-x_1+1))
+\end{align*}
+Denoting using $x$ and $y$, the equations become:
+\begin{align*}
+  2((2x-1)+(3y-1))+(x+9)+(-4y+9)+ 2((2x+1)+(-y+1))&=0\\
+  3((2x-1)+(3y-1))-4((x+9)+(-4y+9))-((2x+1)+(-y+1))&=0
+\end{align*}
+Simplified:
+\begin{align*}
+  9 x + 18&=0\\
+  26 y - 80&=0
+\end{align*}
+Solutions: $x = -2, y = \frac{40}{13}$.
+
+\hwsec{(b).}
+Given $x_0=-0.5, x_1=0, x_2=0.5$, we get the following equations:
+\begin{align*}
+f(x)&=1 & 2a_0+a_1&=2\\
+f(x)&=x^2 & 2a_0 (-0.5)^2&=\frac23
+\end{align*}
+Also by symmetry, $a_0=a_2$, so we can first solve $a_0=\frac43$ by the second equation,
+so $a_2=\frac43$ too. Then by the first equation, $a_1=-\frac23$. So:
+\[a_0=\frac43, a_1=-\frac23, a_2=\frac43\]
+
+\begin{document}
+\maketitle
+\tableofcontents
+\section*{}
+\setcounter{section}{4}
+\newpage
+
+\subsection{SOR in Matlab}
+\hwsec{(a).}
+Content of \texttt{sor.m}:
+\begin{minted}{matlab}
+function [x, nit] = sor(A, b, x0, w, d, tol, nmax)
+  % SOR : solve linear system with SOR iteration
+  % Usage: [x,nit]=sor(A,b,x0,omega,d,tol,nmax)
+  % Inputs:
+  % A : an n x n-matrix,
+  % b : the rhs vector, with length n
+  % x0 : the start vector for the iteration
+  % tol: error tolerance
+  % w: relaxation parameter, (1 < w < 2),
+  % d : band width of A.
+  % Outputs::
+  % x : the solution vector
+  % nit: number of iterations
+  x = x0;
+  n = length(x);
+  nit = 0;
+
+    0.4365
+
+  fx0 = feval(f, x0);
+  fr = (x1 - x0) / (fx1 - fx0);
+  x = mysecant(f, x1, x - fr * fx1, tol, nmax - 1);
+end
+\end{minted}
+Script for computing $\sqrt{2}$:
+\begin{minted}{matlabsession}
+>> format compact;
+>> format long e;
+>> f = @(x) x^2 - 2;
+>> mysecant(f, 1, 2, 1e-12, 10)
+\end{minted}
+Result:
+\begin{minted}{text}
+x = 2
+x = 1.33333
+x = 1.4
+x = 1.41463
+x = 1.41421
+x = 1.41421
+x = 1.41421
+ans =
+     1.414213562373095e+00
+\end{minted}
+Hence the result: approximately $1.41421$.
+
+\noindent\textbf{(d).}
+Since all $x_i$ are unchanged (only $y_5$ changed), we can reuse $l_0$ to $l_5$,
+and for $i\in\set{0,1,2,3,4}$ we know $p(x_i)=q(x_i)$.
+By this identity and Lagrange's form, we have the following:
+\begin{align*}
+p(x)&=\sum^{5}_{i=0}(l_i(x)\times p(x_i))\\
+&=\sum^{4}_{i=0}(l_i(x)\times p(x_i))+(l_5(x)\times p(5))\\
+q(x)&=\sum^{5}_{i=0}(l_i(x)\times q(x_i))\\
+&=\sum^{4}_{i=0}(l_i(x)\times q(x_i))+(l_5(x)\times q(5))\\
+&=\sum^{4}_{i=0}(l_i(x)\times p(x_i))+(l_5(x)\times q(5))
+\end{align*}
+By simple substitution we get:
+\begin{align*}
+q(x)&=p(x)-l_5(x)\times p(5)+l_5(x)\times q(5)\\
+&=p(x)+l_5(x)\times \left(q(5)-p(5)\right)\\
+&=p(x)-31l_5(x)
+\end{align*}
+The value of $l_5(x)$ is:
+\begin{align*}
+l_5(x)&=\prod^4_{i=0}\frac{x-x_i}{x_5-x_i}\\
+&=\frac{\prod^4_{i=0}(x-x_i)}{\prod^4_{i=0}{(x_5-x_i)}}\\
+&=\frac{(x + 2) (x + 1) x (x - 1) (x - 2)}{120}\\
+&=\frac{x^5 - 5 x^3 + 4 x}{120}
+\end{align*}
+So the final result is:
+\begin{align*}
+q(x)&=p(x)-31l_5(x)\\
+&=x^4-x^3+x^2-x+1-31\frac{x^5 - 5 x^3 + 4 x}{120}\\
+&=-\frac{31}{120}x^5 + x^4 + \frac{7}{24}x^3 + x^2 - \frac{61}{30} + 1
+\end{align*}
+
+\begin{align*}
+\chi_1^2&=\sum^n_{i=1}\frac{(Y_i-50p_i)^2}{50p_i}\\
+&=\frac{(32-30.95)^2}{30.95}+\frac{(12-14.85)^2}{14.85}+\frac{(6-4.20)^2}{4.20}\\
+&\approx 1.354
+\end{align*}
+
+The rest of the terms are $(-1+\frac52)+(-\frac12)+(-\frac4{n+1})+(\frac5{n+1}-\frac4{n+2})$,
+which, when $n\to\infty$, computes to $1$.
+\subsection{6.26 (3)}
+So, for some $n$, consider
+\begin{align*}
+&\sum_{m=1}^n{a_{n+m}}\\
+=&\sum_{m=1}^{2n}-\sum_{m=1}^{n}\\
+\to&2\cdot0-0 \quad \text{when}~n\to\infty\\
+=&0
+\end{align*}
+Note that $na_{2n}\leq\sum_{m=1}^{n}{a_{n+m}}$ since $\langle a_n\rangle$ decreases,
+and $na_{2n}\geq0$.
+
+To workaround this, we multiply the numberator and the denominator by a conjugate:
+\begin{align*}
+f(x)&=\frac{\sqrt{x+2}+\sqrt x}{(\sqrt{x+2}-\sqrt x)(\sqrt{x+2}+\sqrt x)}\\
+&=\frac{\sqrt{x+2}+\sqrt x}{\sqrt{x+2}^2-{\sqrt x}^2}\\
+&=\frac{\sqrt{x+2}+\sqrt x}{x+2-x}\\
+&=\frac{\sqrt{x+2}+\sqrt x}2
+\end{align*}
+Computing this preserves the significant digits.
+
+\begin{document}
+\maketitle
+
+$1$ GHz $\implies$ $1$ ns/cycle, restart time $100+1=101$ ns.
+We calculate a weighted average:
+
+\documentclass{amsart}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{amsthm}
+\usepackage{hyperref}
+\usepackage{mathpazo}
+\newtheorem*{remark}{Remark}
+\title{Math 401 Homework 4}
+\author{}
+\email{@psu.edu}
+\begin{document}
+\maketitle
+\tableofcontents
+\section{4.6}
+\subsection{4.6 (1)}
+\begin{proof}
+By def. of convergent sequences,
+for $\epsilon\in\mathbb R,\epsilon>0$ we need to find $N\in\mathbb R$ s.t. $\forall n>N. |\frac{n^2-1}{n^2+1}-1|<\epsilon$.
+
+\subsection{Fixed point iteration}
+Given $f(x)=\exp{-x}-\cos x$.
+
+\begin{align*}
+\ell(\lambda)&=\ln{(e^{-n\lambda})}-\ln{\left(\prod^n_{i=1} (x_i!)\right)}+\ln{\left(\lambda^{\sum^n_{i=1}x_i}\right)}\\
+&=-n\lambda-\sum^n_{i=1}\ln{(x_i!)}+\ln{\lambda}\sum^n_{i=1}x_i\\
+\ell'(\lambda)&=-n-0+\frac1{\lambda}\sum^n_{i=1}x_i
+=\frac{n\bar X}\lambda -n\\
+\ell''(\lambda)&=-\frac{n\bar X}{\lambda^2}
+\end{align*}
+
+\[\fbox{$\left(\bar X-\frac{1.96\sqrt{\bar X}}{16}, \bar X+\frac{1.96\sqrt{\bar X}}{16}\right)$}\]
+
+\hwsec{(b).}
+So $H=b-a=2$, and the goal is to compute $R(1, 1)=T(f, H/2)$, given that:
+\begin{align*}
+R(1, 0)&=T(f, H/2)\\
+R(0, 0)&=T(f, H)\\
+R(1, 1)&=R(1, 0)+\frac{R(1, 0)-R(0, 0)}{2^2-1}
+\end{align*}
+So $R(1, 1)=T(f,\frac{h}{2})+\frac{T(f,\frac{h}{2})-T(f,h)}{2^2-1}=3+\frac{3-6}{3}=2$,
+and this is the exact value $\int^1_{-1}3x^2dx=2$.
+
+\subsubsection*{(b).}
+Commands (tested three times):
+\begin{minted}{matlab}
+>> [r1, r2] = quadroots(2, 6, -3)
+>> [r1, r2] = quadroots(1, -14, 49)
+>> [r1, r2] = quadroots(3, -123454321, 2)
+\end{minted}
+Testing output, respectively:
+\begin{minted}{text}
+r1 =
+
+\begin{align*}
+p_1(\lambda)&=P(Y=0)=\exp{-\lambda}\\
+p_2(\lambda)&=P(Y=1)=\lambda\exp{-\lambda}\\
+p_3(\lambda)&=1-p_1(\lambda)-p_2(\lambda)
+\end{align*}
+
+\section{5.15 (1)}
+For $n\to\infty$, $n^{-1}\to0$, thus $1+n^{-1}\to1+0=1$.
+
+\usepackage{amsmath}
+\usepackage{mathpazo}
+\usepackage{cleveref}
+\usepackage{minted}
+
+   1.7385e-08
+
+\subsection{A simple higher order ODE}
+\hwsec{(a).}
+Initial conditions:
+\[x(0) = 1, x'(0)=2, x''(0) = 3\]
+Variable changes: let $y=x'$, $z=y'=x''$.
+Hence the new initial conditions are:
+\[x(0) = 1, y(0)=2, z(0) = 3\]
+System of equations:
+\[\begin{cases}
+x'=y\\
+y'=z\\
+z'=-2z+xt
+\end{cases}\]
+
+\section{Screenshots}
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.65]{schematics.png}
+\caption{Design schematics}
+\end{figure}
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.65]{wave.png}
+\caption{Waveform}
+\end{figure}
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.65]{floor.png}
+\caption{Floor planning}
+\end{figure}
+\begin{figure}[h]
+\centering
+\includegraphics[scale=0.65]{io.png}
+\caption{I/O planning}
+\end{figure}
+\end{document}
+
+\documentclass{amsart}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{amsthm}
+\usepackage{hyperref}
+\usepackage{mathpazo}
+\usepackage{tikz-cd}
+\usepackage{tikz-cd}
+\usetikzlibrary{calc}
+\usetikzlibrary{decorations.pathmorphing}
+% A TikZ style for curved arrows of a fixed height, due to AndréC.
+\tikzset{curve/.style={settings={#1},to path={(\tikztostart)
+    .. controls ($(\tikztostart)!\pv{pos}!(\tikztotarget)!\pv{height}!270:(\tikztotarget)$)
+    and ($(\tikztostart)!1-\pv{pos}!(\tikztotarget)!\pv{height}!270:(\tikztotarget)$)
+    .. (\tikztotarget)\tikztonodes}},
+    settings/.code={\tikzset{quiver/.cd,#1}
+        \def\pv##1{\pgfkeysvalueof{/tikz/quiver/##1}}},
+    quiver/.cd,pos/.initial=0.35,height/.initial=0}
+\newtheorem*{remark}{Remark}
+\title{Math 401 Homework 6}
+\author{}
+\email{@psu.edu}
+\begin{document}
+\maketitle
+\tableofcontents
+\section{6.26}
+\subsection{6.26 (1)}
+Suppose $\frac An+\frac B{n+1}+\frac C{n+2}=\frac{3n-2}{n(n+1)(n+2)}$,
+which solves to $A=-1, B=5, C=-4$.
+So, the original formula becomes $\sum_{n=1}^\infty(-\frac1n+\frac5{n+1}-\frac4{n+2})$.
+
+Let \(Q=(n-1)s^2+n(\bar X-\mu)^2\), which is constant to \(\sigma^2\).
+Let \(\omega=\frac Q{2\sigma^2}\), and notice
+\(\sigma^{-n-2}=\left(\sigma^{-\frac{n+1}2}\right)^2\). Also
+\(\frac{\partial\omega}{\partial\sigma^2}=-\frac Q{2(\sigma^2)^2}\), so
+\(\frac{\partial\sigma^2}{\partial\omega}=-\frac Q{2\omega^2}\). By that the
+integration can be written as:
+
+\subsection{Trapezoid and Simpson's Methods}
+Generated dataset:
+\[\begin{array}{c|c} x_i &f(x_i)  \\\hline
+0.0 & 1 \\
+0.2 & 0.818731 \\
+0.4 & 0.670320 \\
+0.6 & 0.548812 \\
+0.8 & 0.449329 \\
+\end{array}\]
+The interval of integration is $[a,b]=[0.0, 0.8]$, and $n=4$.
+This is a uniform gird where $h=0.2$.
+
+\subsection{A Study on Loss of Significance}
+\subsubsection*{(a).}
+Content of file \texttt{quadroots.m}:
+\begin{minted}{matlab}
+function [r1, r2] = quadroots(a, b, c)
+% input: a, b, c: coefficients for the polynomial ax^2+bx+c=0.
+% output: r1, r2: The two roots for the polynomial.
+  rt = sqrt(b^2 - 4 * a * c);
+  r1 =- (b + rt) / (2 * a);
+  r2 =- (b - rt) / (2 * a);
+end
+
+\title{ Homework 3}
+\author{ \\ \texttt{@psu.edu}}
+
+When \(n\) is large, \(I(\lambda)=\)
+\(I(\hat\lambda_{MLB})=n/\hat\lambda_{MLB}\) \(=n/\bar X\), so
+\(S=\sqrt{\bar X/n}=\) \(\sqrt{\bar X/256}=\sqrt{\bar X}/16\), so we go
+back to the original inequality and it's
+
+\hwsec{(c).}
+The exact value:
+\[\int_{0.0}^{0.8} e^{-x}dx=0.550671\]
+The absolute error for the trapezoid rule is $\abs{0.550671-0.552506}=1.835\times 10^{-3}$,
+and for Simpson's rule is $\abs{0.550671-0.550676}=5\times 10^{-6}$, much smaller.
+So, Simpson's rule is better.
+
+\hwsec{(d).}
+The error for $f(x)=\sin x$ is:
+\begin{minted}[fontsize=\small]{matlabsession}
+>> quad('sin', 0, pi, 1e-9)-table(romberg('sin', 0, pi, 4)).Var1(4, 4)
+>> quadl('sin', 0, pi, 1e-9)-table(romberg('sin', 0, pi, 4)).Var1(4, 4)
+\end{minted}
+Results from Matlab:
+\begin{minted}{text}
+ans =
+
+\begin{align*}
+P\left(-1.96<\frac{\hat\theta_{MLE}-\theta}{\hat\theta_{MLE}/\sqrt n}<1.96\right)&=0.95\\
+P\left(-1.96<\frac{(\log 2)\bar X-\theta}{(\log 2)\bar X/\sqrt n}<1.96\right)&=0.95\\
+\end{align*}
+
+\hwsec{(c).}
+The system can be written as:
+\[\bkarr{cc}{2&3\\1&-4\\2&-1}\bkarr{c}{x\\y}=\bkarr{c}{1\\-9\\-1}\]
+Equation reasoning:
+\begin{align*}
+  Ax&=b\\
+  A^\top (Ax)&=A^\top b\\
+  (A^\top A) x&=A^\top b
+\end{align*}
+The last step is by the associativity of matrix multiplication.
+
+\hwsec{(c).}
+Matlab script for computation:
+\begin{minted}{matlabsession}
+>> format compact;
+>> m = @(x, y) [y(2); 6 * x^3 - 6 * y(1)];
+>> alpha = 0; gamma = 0;
+>> gu1 = [0 1]; ab = [0 1];
+>> shootN = @(g) ode45(m, ab, [alpha g]);
+>> [x1, y1] = shootN(gu1(1));
+>> [x2, y2] = shootN(gu1(2));
+>> shot = [y1(end, 1), y2(end, 1)];
+>> gu2 = interp1(shot, gu1, gamma, 'linear', 'extrap');
+>> [x3, y3] = shootN(gu2);
+\end{minted}
+Matlab script to generate figures,
+with a comparison between analytic and numerical solutions:
+\begin{minted}{matlabsession}
+>> analX = linspace(0, 1, 100);
+>> analY = @(x) x.^3 - x;
+>> plot(analX, analY(analX), '-');
+>> hold on;
+>> plot(x3, y3(:, 1), 'o');
+>> legend('Analytic solution', 'Numerical solution');
+\end{minted}
+Generated plot:
+\simplot{2.png}
+
+\title{ HW 5}
+\author{ \\ \texttt{@psu.edu}}
+\date{\today}
+
+\hwsec{(c).}
+Gauss-Seidel iteration, with the same initial values:
+\begin{itemize}
+\item $0.3750, 5.7188, -4.5703$
+\item $1.7109, 5.0742, -4.7314$
+\item $2.1943, 4.6714, -4.8322$
+\item $2.4965, 4.4196, -4.8951$
+\item $2.6853, 4.2623, -4.9344$
+\item $2.8033, 4.1639, -4.9590$
+\item $2.8771, 4.1024, -4.9744$
+\item $2.9232, 4.0640, -4.9840$
+\item $2.9520, 4.0400, -4.9900$
+\item $2.9700, 4.0250, -4.9937$
+\item $2.9812, 4.0156, -4.9961$
+\item $2.9883, 4.0098, -4.9976$
+\item $2.9927, 4.0061, -4.9985$
+\item $2.9954, 4.0038, -4.9990$
+\item $2.9971, 4.0024, -4.9994$
+\item $2.9982, 4.0015, -4.9996$
+\item $2.9989, 4.0009, -4.9998$
+\item $2.9993, 4.0006, -4.9999$
+\end{itemize}
+It seems to work better, as producing more accurate results
+after $18$ iterations (the same amount of iterations we did for Jacobi)!
+
+\begin{align*}
+I(\lambda)&=-E\left(\ell''(\lambda)\right)=E\left(\frac{n\bar X}{\lambda^2}\right)\\
+&=\frac{n}{\lambda^2} E\left(\bar X\right)=\frac{n}{\lambda^2} \mu=\frac{n}{\lambda^2} \lambda\\
+&=n/\lambda
+\end{align*}
+
+% By Taylor expansion, define:
+
+  for i = 1:m - 1
+    j = n - i + 1;
+    sol = [d(i) a(j); a(i) d(j)] \ [b(i); b(j)];
+    x(i) = sol(1);
+    x(j) = sol(2);
+  end
+end
+\end{minted}
+Testing script:
+\begin{minted}{matlabsession}
+>> format default;
+>> format compact;
+>> o = @(a) ones(1, a);
+>> r = @(n) floor(n / 2);
+>> blah = @(n) 5 * o(r(n));
+>> b = @(n) [blah(n) [4] blah(n)];
+>> runTest = @(n) GaussianX(n, 4 * o(n), o(n), b(n));
+>> runTest(7)
+>> runTest(9)
+>> runTest(11)
+\end{minted}
+Results:
+\begin{minted}{text}
+ans =
+    1.0000    1.0000    1.0000    1.0000    1.0000    1.0000    1.0000
+ans =
+    1.0000    1.0000    1.0000    1.0000    1.0000    1.0000    1.0000    1.0000    1.0000
+ans =
+    1.0000    1.0000    1.0000    1.0000    1.0000    1.0000    1.0000    1.0000    1.0000    1.0000    1.0000
+\end{minted}
+Yummy.
+
+\noindent
+(i). $(100.01)_{10}$, integral part (according to example 4):
+\[\begin{array}{r|lc}
+&&(remainder)\\
+100 & 2 & 0 \\
+50 & 2 & 0\\
+25 & 2 & 1\\
+12 & 2 & 0\\
+6 & 2 & 0\\
+3 & 2 & 1\\
+1 & 2 & 1
+\end{array}\]
+So $(100)_{10}=(1100100)_2$. Fractional part:
+\[\begin{array}{lr}
+0.01 & \times 2 \\
+\fracStep0{02}
+\fracStep0{04}
+\fracStep0{08}
+\fracStep0{16}
+\fracStep0{32}
+\fracStep0{64}
+\fracStep1{28}
+\fracStep0{56}
+\fracStep1{12}
+\fracStep0{24}
+\fracStep0{48}
+\fracStep0{96}
+\fracStep1{92}
+\fracStep1{84}
+\fracStep1{68}
+\fracStep1{36}
+\fracStep0{72}
+\fracStep1{44}
+\fracStep0{88}
+\end{array}\]
+So $(0.01)_{10}=(0.0000001010001111010)_{2}$.
+Therefore, the original number equals $(1100100.0000001010001111010)_{2}$.
+
+%\def\bel{\begin{equation}\label}
+\def\eeq{\end{equation}}
+\newcommand{\abs}[1]{\left| #1 \right|}
+\def\beqn{\begin{eqnarray*}}
+\def\eeqn{\end{eqnarray*}}
+
+    for k = 1:2^(i - 1)
+      R(i + 1, 1) = R(i + 1, 1) + h * feval(f, a + (2 * k - 1) * h);
+    end
+  end
+
+\section{3.11}
+\subsection{3.11 (2)}
+\begin{proof}
+By induction on $n\in\mathbb N$.
+\begin{enumerate}
+\item For $n=0$, $\sum^n_{k=0}x^k=1=\frac{1-x}{1-x}=\frac{1-x^{n+1}}{1-x}$.
+\item For $n=n'+1$, with induction hypothesis $\sum^{n'}_{k=0}x^k=\frac{1-x^{n'+1}}{1-x}=\frac{1-x^n}{1-x}$:
+\begin{align*}
+\sum^n_{k=0}x^k&=\sum^{n'}_{k=0}x^k+x^n\\
+&=\frac{1-x^n}{1-x}+x^n\\
+&=\frac{1-x^n+(1-x)x^n}{1-x}\\
+&=\frac{1-x^n+x^n-x^{n+1}}{1-x}\\
+&=\frac{1-x^{n+1}}{1-x}
+\end{align*}
+\end{enumerate}
+\end{proof}
+\subsection{3.11 (4)}
+\begin{proof}
+\begin{align*}
+\tbinom nr+\tbinom n{r-1}&=\frac{n!}{r!(n-r)!}+\frac{n!}{(r-1)!(n-r+1)!}\\
+&=\frac{n!}{(r-1)!r(n-r)!}+\frac{n!}{(r-1)!(n-r)!(n-r+1)}\\
+&=\frac{n!(n-r+1)+n!r}{(r-1)!r(n-r)!(n-r+1)}\\
+&=\frac{n!(n-r+1+r)}{r!(n-r)!(n-r+1)}\\
+&=\frac{n!(n+1)}{r!(n-r+1)!}\\
+&=\frac{(n+1)!}{r!(n-r+1)!}
+\end{align*}
+Then, by induction on $n\in\mathbb N$.
+\begin{enumerate}
+\item For $n=0$, $(a+b)^0=a^0+b^0=2=\sum^1_{r=0}\tbinom1r a^{1-r}b^r$.
+\item For $n=n'+1$, with induction hypothesis $(a+b)^{n'}=\sum^{n'}_{r=0}\tbinom{n'}r a^{n'-r}b^r$:
+\begin{align*}
+(a+b)^{n}&=(a+b)^{n'+1}\\
+&=(a+b)(a+b)^{n'}\\
+&=(a+b)(\sum^{n'}_{r=0}\tbinom{n'}r a^{n'-r}b^r)\\
+&=\sum^{n'}_{r=0}\tbinom{n'}r a^{n'-r+1}b^r+\sum^{n'}_{r=0}\tbinom{n'}r a^{n'-r}b^{r+1}\\
+&=\sum^{n'}_{r=0}\tbinom{n'}r a^{n'+1-r}b^r+\sum^{n'+1}_{r=0}\tbinom{n'}{r-1} a^{n'+1-r}b^{r}\\
+&=\sum^{n'}_{r=0}\tbinom{n'}r a^{n-r}b^r+\sum^n_{r=1}\tbinom{n'}{r-1} a^{n-r}b^{r}\\
+&=a^n+b^n+\sum^{n'}_{r=1}(\tbinom{n'}r+\tbinom{n'}{r-1}) a^{n-r}b^r\\
+&=a^n+b^n+\sum^{n'+1}_{r=0} \tbinom{n'+1}r a^{n-r}b^r\\
+&=a^n+b^n+\sum^{n}_{r=0} \tbinom nr a^{n-r}b^r
+\end{align*}
+\end{enumerate}
+\end{proof}
+\end{document}
+
+\hwsec{(c).}
+Given $x_0=-a, x_1=a$, and $a_0=a_1=w$, we get the following equations:
+\begin{align*}
+f(x)&=1 & 2w+w&=2\\
+f(x)&=x^2 & 2w\times a^2&=\frac23
+\end{align*}
+Solving the first equation, we get $w=\frac23$,
+and the second equation gives $a=\frac1{\sqrt2}$. So:
+\[w=\frac23, a=\frac1{\sqrt 2}\]
+
+\begin{enumerate}
+\def\labelenumi{(\alph{enumi})}
+\tightlist
+\item
+  By \(E_{i, j}=\frac{X_{i+}\times X_{+j}}{X_{++}}\):
+\end{enumerate}
+
+   1.9237e-16            0            0            0
+   1.5708e+00   2.0944e+00            0            0
+   1.8961e+00   2.0046e+00   1.9986e+00            0
+   1.9742e+00   2.0003e+00   2.0000e+00   2.0000e+00
+
+% 1.0000         0         0         0    6.0000
+%       0    2.0000         0    5.0000         0
+%       0         0    3.0000         0         0
+%       0         0         0   -3.5000         0
+%       0         0         0         0   -7.0000
+% 1     1     1     1     1
+% \end{minted}
+
+\subsection{When Newton's Method Does not Work Well}
+\hwsec{(i) (a).}
+Derivative:
+\[f'(x)=m(x-1)^{m-1}\]
+Newton's method:
+\begin{align*}
+ x_{k+1}&=x_k-\frac{f(x_k)}{f'(x_k)}\\
+ &=x_k-\frac{(x_k-1)^m}{m(x_k-1)^{m-1}}\\
+ &=x_k-\frac{x_k-1}{m}\\
+ &=\frac{(m-1) x_k+1}{m}
+\end{align*}
+Let $m=8$, so $x_{k+1}=\frac{7 x_k+1}{8}$.
+This also gives $g(x)=\frac{7 x+1}{8}$.
+
+% putStrLn  . join . intersperse "\\mid" . fmap pure $ "hey"
+\fbox{$0\mid1\mid0\mid0\mid0\mid0\mid1\mid0\mid1\mid0\mid0\mid0\mid0\mid0\mid0\mid1\mid0\mid1$}
+
+\title{ Homework 10}
+\author{ \\ \texttt{@psu.edu}}
+
+For our workload, computer B takes approximately $501$ nanoseconds for each instruction,
+while computer A takes approximately $5011$ nanoseconds.
+Apparently, the performance of computer B is better.
+Computer B also has higher CPU rate, which means it can switch tasks more frequently.
+I may also buy another faster disk for computer B, because disk replacement is very feasible for computers.
+
+This means that for each 3 consecutive terms,
+the last of the first, the middle of the middle, and the first of the last cancel out.
+
+\hwsec{(c).}
+Matlab script:
+\begin{minted}{matlabsession}
+>> format compact;
+>> f1 = @(x,y,z,t) y;
+>> f2 = @(x,y,z,t) z;
+>> f3 = @(x,y,z,t) -2 * z + x * t;
+>> tn = 0:0.1:1;
+>> x1(1) = 1; y2(1) = 2; z3(1) = 3;
+>> t = zeros(1, length(tn));
+>> for i = 1:length(tn)-1,
+    t(i+1) = t(i)+0.1;
+    app = @(f) 0.1 * f(x1(i), y2(i), z3(i), t(i));
+    x1(i+1) = x1(i) + app(f1);
+    y2(i+1) = y2(i) + app(f2);
+    z3(i+1) = z3(i) + app(f3);
+  end
+>> [t(end) x1(end)]
+>> plot(t, x1)
+\end{minted}
+Matlab output:
+\begin{minted}{text}
+ans =
+    1.0000    3.8616
+\end{minted}
+
+\subsection{Finite Difference Method in 1D}
+\hwsec{(a).}
+Configurations:
+\begin{itemize}
+\item ODE: \[y''=y'+2y+\cos(x)\]
+\item Boundary conditions: \[y(0)=-0.3, y(\frac\pi2)=-0.1\]
+\item Finite difference approximation to the derivatives:
+\begin{align*}
+  y'(x_i) &= \frac{y(x_{i+1}) - y(x_{i-1})}{2h}\\
+  y''(x_i) &= \frac{y(x_{i+1}) - 2y(x_{i}) + y(x_{i-1})}{h^2}
+\end{align*}
+\item Iteration scheme:
+\[y_{i+1}\left(\frac1{h^2}-\frac1{2h}\right)+y_i\left(\frac{-2}{h^2}-2\right)
++y_{i-1}\left(\frac1{h^2}+\frac1{2h}\right)=\cos(x_i)\]
+\end{itemize}
+The tri-diagonal system of linear equations:
+\[\left[\begin{array}{ccccc}
+    \frac{-2}{h^2} & \frac{1}{h^2}-\frac{1}{2h} & \\
+    \frac{1}{h^2}+\frac{1}{2h} & \frac{-2}{h^2}-2 & \frac1{h^2}-\frac1{2h} & \\
+    \cdots & \cdots & \cdots & \cdots & \cdots \\
+    & & & \frac{1}{h^2}+\frac{1}{2h} & \frac{-2}{h^2}-2 \\
+  \end{array}\right]
+  =
+  \left[\begin{array}{c}
+    \cos(x_1) + 0.3\left(\frac{1}{h^2}+\frac{1}{2h}\right)\\
+    \cos(x_2) \\
+    \cdots \\
+    \cos(x_n) + 0.1\left(\frac{1}{h^2}-\frac{1}{2h}\right)
+  \end{array}\right]
+\]
+
+\subsection{X System of Linear Equations}
+% Experimentation code in \texttt{GXExp.m}
+% for observing the intermediate results of Gaussian elimination:
+% \begin{minted}{matlab}
+% function GXExp(n, d, a, b)
+%   A = sparse(zeros(n, n));
+
+Note that
+\begin{align*}
+&(-\frac1{n-2}+\frac5{n-1}-\frac4{n})+(-\frac1{n-1}+\frac5{n}-\frac4{n+1})+
+(-\frac1n+\frac5{n+1}-\frac4{n+2})\\
+=&(-\frac1{n-2}+\frac5{n-1})+(-\frac1{n-1}-\frac4{n+1})+
+(\frac5{n+1}-\frac4{n+2})
+\end{align*}
+
+So, disregarding cosmetics reasons, I would buy computer B.
+
+By \(n=256>30\), we may use the approximate normal distribution. So, by
+the property of standanrd normal distribution, the \(95\%\) confidence
+interval gives us the following inequality:
+
+So the interval is:
+
+\documentclass{article}
+\usepackage{setspace}
+\usepackage{graphicx}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage[
+  a4paper,
+  left=0.60in,
+  right=0.60in,
+  top=0.50in,
+  bottom=0.50in,
+  nohead
+]{geometry}
+\doublespacing
+
+\title{ HW 4}
+\author{ \\ \texttt{@psu.edu}}
+\date{\today}
+
+The sum of $\langle r_n \rangle$ is greater than its
+strict subsequence, and the sum of such a subsequence $A$ is
+a sum of infinite number of $1$, which diverges.
+\subsection{6.26 (5)}
+\begin{enumerate}
+\item (i) Use ratio test:
+$\frac{\frac{(n+1)!^2}{(2n+2)!}}{\frac{n!^2}{2n!}}=\frac{(n+1)^2n!^22n!}{(2n+2)(2n+1)2n!n!^2}=\frac{(n+1)^2}{(2n+2)(2n+1)}\to\frac14<1$ so converges absolutely.
+\item (ii) Use ratio test: $\frac{(n+1)!^25^{n+1}2n!}{(2n+2)!n!^25^n}\to\frac54>1$
+(essentially multiplying the number in (i) by 5) so diverges.
+\item (iii) Use root test: $\sqrt[n]{|\frac{n}{n+1}|^{n^2}}=\frac{n}{n+1}^n=1^n-\frac1{n+1}^n$
+where $\frac1{n+1}^n$ is positive, thus $1-\frac1{n+1}^n<1$, so it converges.
+\item (iv) Use root test: it's essentially multiplying $\sqrt[n]{4^n}$ to the number in (iii), which is greather than $1$, so it diverges.
+\item (v) Since $\sqrt{n+1}-\sqrt n<\sqrt{n}$ when $n>1$,
+$\frac1n(\sqrt{n+1}-\sqrt n)<\frac1n\sqrt n=\frac1{n^{\frac32}}$ and $\frac1{n^{\frac32}}$ converges,
+so the original series also converges.
+\item (vi) The sequence is like $1-\frac{-1}{\sqrt2}+\frac1{\sqrt3}-\cdots$, which converges by theorem 6.13.
+\end{enumerate}
+\subsection{6.26 (6)}
+It seems we have two, positive even denominators and one negative odd denominator.
+So, $t_{3n}=s_{2n}+(\frac1{2n+2}+\frac1{2n+4}+\cdots+\frac1{4n})$
+and $\frac1{2n+2}+\frac1{2n+4}+\cdots+\frac1{2n}=\frac12(\frac1{n+1}+\frac1{n+2}+\cdots+\frac1{2n})$
+where $\frac1{n+1}+\frac1{n+2}+\cdots+\frac1{2n}=s_{2n}$, so $t_{3n}=s_{2n}+\frac12s_{2n}$.
+\section{Test}
+\[\begin{tikzcd}
+	A & {W^0_s} & {\Xi_{\Upsilon, s}} & {C_{\Upsilon, s}} & {\Upsilon_{s}} \\
+	A & {W^{\ddag, 0}_s} & {\Xi_{\Upsilon^{\ddag}, s}} & {C_{\Upsilon^{\ddag}, s}} & {\Upsilon^{\ddag}_{s}}
+	\arrow[from=1-2, to=1-3]
+	\arrow[from=1-3, to=1-4]
+	\arrow[from=1-4, to=1-5]
+	\arrow[from=2-2, to=2-3]
+	\arrow[from=2-3, to=2-4]
+	\arrow[from=2-4, to=2-5]
+	\arrow["\phi"', from=1-2, to=1-1]
+	\arrow["{\phi_{\ddag}}"', from=2-2, to=2-1]
+	\arrow[from=1-2, to=2-2]
+	\arrow[from=1-3, to=2-3]
+	\arrow[from=1-4, to=2-4]
+	\arrow["{i_{\Upsilon, s}}", from=1-5, to=2-5]
+	\arrow["{i_s}", from=1-1, to=2-1]
+	\arrow["\psi"{description}, curve={height=-12pt}, from=1-2, to=1-5]
+	\arrow["{\psi_{\ddag}}"{description}, curve={height=-12pt}, from=2-2, to=2-5]
+\end{tikzcd}\]
+\end{document}
+
+\hwsec{(d).}
+SOR iteration based on Gauss-Seidel, with the same initial values:
+\begin{itemize}
+\item $-1.0312, 6.5918, -3.9401$
+\item $1.5780, 5.0164, -4.9474$
+\item $2.4026, 4.3224, -4.9124$
+\item $2.8471, 4.0901, -4.9937$
+\item $2.9537, 4.0228, -4.9944$
+\item $2.9902, 4.0052, -4.9998$
+\item $2.9975, 4.0011, -4.9997$
+\item $2.9996, 4.0002, -5.0000$
+\end{itemize}
+We get nearly perfect results from $8$ iterations, which is great!
+
+\title{Cmpsc 473 midterm}
+\author{ \\ \texttt{@psu.edu}}
+\date{\today}
+
+\noindent
+(ii). $\frac13-\frac{100}{301}$. By chopping to $5$ significant digits,
+$\frac13=0.33333$, $\frac{100}{301}=0.33222$, so the result is
+$0.33333-0.33222=0.00111=0.0011100$.
+
+\textbf{(c).} Script for generating the plot for Type I:
+\begin{minted}{matlabsession}
+>> format compact;
+>> ty1 = @(i) 5 * cos(i * pi / 20);
+>> x = ty1(0:20);
+>> t = -5:0.05:5;
+>> points = polyvalue(divdiff(x, f(x)), x, t);
+>> plot(t, points, t, f(t), t, abs(points - f(t)));
+\end{minted}
+Matlab generated plot:
+\begin{center}
+\includegraphics[width=0.7\textwidth]{2.6c1}
+\end{center}
+It is much better, because the error is reduced
+(according to the slides) by:
+\[
+  \frac{\frac{|f^{(22)}(x)|}{4\times 22}\times 0.5^{22}}
+  {\frac{|f^{(22)}(x)|}{22!}\times 2^{-22}}
+  =\frac{22!}{4\times 22}=\frac{21!}4
+\]
+And this is a very large number.
+So, the error bound is reduced by a very large number.
+
+\section{Source Code}
+\lstinputlisting[language=Verilog]{../Lab3.srcs/sources_1/new/tesla_cpu.v}
+\section{Test Bench Code}
+\lstinputlisting[language=Verilog]{../Lab3.srcs/sim_1/new/tb.v}
+
+\[\fbox{$\left({(\log2)\bar X}-\frac{1.96(\log2)\bar X}{\sqrt{n}}, {(\log2)\bar X}+\frac{1.96(\log2)\bar X}{\sqrt{n}}\right)$}\]
+
+\documentclass{amsart}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{amsthm}
+\usepackage{hyperref}
+\usepackage{mathpazo}
+\newtheorem*{remark}{Remark}
+\title{Math 401 Homework 5}
+\author{}
+\email{@psu.edu}
+\begin{document}
+\maketitle
+\tableofcontents
+\section{5.7 (1)}
+\begin{proof}
+Let $n^{\frac1n}\to x$ when $n\to\infty$,
+by theorem 5.2 the subsequence $(2n)^{\frac1{2n}}\to x$.
+Also by $2^{\frac1{2n}}\to 1$, we obtain the following equality:
+\begin{align*}
+&n^{\frac1n}=(2n)^{\frac1{2n}}\\
+&=2^{\frac1{2n}}\cdot n^{\frac1{2n}}\\
+&\to 1\cdot n^{\frac1{2n}}\\
+&=n^{\frac1{2n}}
+\end{align*}
+Since $x=n^{\frac1{2n}}=n^{\frac1n}=(n^{\frac1{2n}})^2=x^2$, we have $x=x^2$,
+which means $x=\pm1$ or $0$. Since $n>0$, $n^{\frac1n}>0$, so $x=1$.
+So, $n^{\frac1n}\to1$ when $n\to\infty$.
+\end{proof}
+
+\hwsec{(b).} 2nd order Runge-Kutta method.
+For $k=0$:
+\begin{align*}
+  K_1&=h\times f(t_k,x_k)=0.1=0.1 \\
+  K_2&=h\times f(t_k+h,x_k+K_1)=0.1\\
+  x_1(0.1)&=1+0.1=1.1
+\end{align*}
+For $k=1$:
+\begin{align*}
+  K_1&=K_2=0.1\\
+  x_2(0.2)&=1.1+0.1=1.2
+\end{align*}
+
+By that we get different formulae for $I(f)$:
+\begin{align*}
+I(f) &= T(f, h) + E(f, h)\\
+I(f) &= T(f, h/3) + E(f, h/3)\\
+I(f) &= T(f, h/9) + E(f, h/9)
+\end{align*}
+Similar to the slides again:
+\begin{align*}
+(3^2-1)\cdot I(f)&=(T(f, h/3)+E(f, h/3))\times 3^2-(T(f, h) + E(f, h))\\
+I(f) &=\underbrace{\frac98 T(f, h/3)-\frac13 T(f, h)}_{U'(h)}+\sum_{i=2} \tilde a_{2i}h^{2i}
+\end{align*}
+So:
+\[U'(h)=\frac{3^2 T(f, h/2)-T(f, h)}{3^2-1}\]
+We may follow this to derive the Romberg's $R(n, m)$ formula:
+\[R(n, m)=R(n, m-1)+\frac{R(n, m-1)-R(n-1,m-1)}{3^{2m}-1}\]
+The triangle:
+\[\begin{array}{cccc}
+n&R(n, 0)&R(n, 1)&R(n, 2)\\
+0&0.92074&\\
+1&0.94329&0.94047\\
+2&0.94577&0.94546&0.94540
+\end{array}\]
+So the approximation is $0.94540$.
+
+\subsection{A Question to Ponder}
+To tackle the problem, first we obtain the table in Newton's form:
+\[\begin{array}{c|cccccc}
+x&f[]  &f[,] &f[,,]&f[,,,]&f[,,,,]&f[,,,,,]\\\hline
+-2 &1\\
+-1 &4  &3\\
+0  &11 &7      &2\\
+1  &16 &5      &-1    &-1\\
+2  &13 &-3     &-4    &-1   &0\\
+3  &-4 &-17    &-7    &-1   &0     &0
+\end{array}\]
+Observe that the coefficients $a_4=a_5=0$,
+which means that in the fitted polynomial,
+there are no terms of degree $4$ or $5$.
+This means the maximal degree of the polynomial is $3$.
+
+For \texttt{0.1:0.1:1}, we use the following matlab script:
+\begin{minted}{matlabsession}
+>> format compact;
+>> format long;
+>> c = 0.1:0.1:1;
+>> A = vander(c);
+>> b = A * ones(size(c'));
+>> naiv_gauss(A, b)
+>> A \ b
+\end{minted}
+Answer from matlab:
+\begin{minted}{text}
+ans =
+   0.998774840610394
+   1.005853289548497
+   0.988068244628706
+   1.013568750263305
+   0.990551321010233
+   1.004157217864660
+   0.998851916215852
+   1.000190204544961
+   0.999983061158011
+   1.000000606254654
+ans =
+   1.000000000012049
+   0.999999999936912
+   1.000000000142096
+   0.999999999820241
+   1.000000000139617
+   0.999999999931755
+   1.000000000020688
+   0.999999999996307
+   1.000000000000348
+   0.999999999999987
+\end{minted}
+Observation:
+Basically similar to the previous one,
+but the na\"{i}ve version has much larger errors.
+
+So the interval is approximately:
+
+\begin{align*}
+\ell(\lambda)&=\ln{\left(\prod^n_{i=1}\lambda\right)}-\lambda\sum^n_{i=1}x_i\\
+&=\sum^n_{i=1}\ln\lambda-\lambda n\bar X=n\ln\lambda-\lambda n\bar X\\
+\ell'(\lambda)&=\frac n\lambda-n\bar X\\
+\ell''(\lambda)&=-\frac n{\lambda^2}
+\end{align*}
+
+\hwsec{(a).}
+By the trapezoid rule:
+\begin{align*}
+\int^{0.8}_{0.0} e^{-x}dx&\approx 0.2\left(\frac12 \times 1+\sum^3_{i=1} f(x_i)+\frac12 \times 0.449329 \right)\\
+&= 0.2\left(0.5+0.818731+0.670320+0.548812+0.2246645 \right)\\
+&= 0.2\times 2.7625275\\
+&= 0.2\times 2.7625275\\
+&=0.552506
+\end{align*}
+
+\noindent
+(iii). $(25)_{10}$, integral part:
+\[\begin{array}{r|lc}
+&&(remainder)\\
+25 & 2 & 1 \\
+12 & 2 & 0\\
+6 & 2 & 0\\
+3 & 2 & 1\\
+1 & 2 & 1
+\end{array}\]
+So $(25)_{10}=(11001)_2$.
+
+\begin{itemize}
+\item Miscellaneous instructions: $W_0=0.9$, $V_0=1$
+\item TLB miss, no page fault: $W_1=0.1\times 0.01 \times 0.99$,
+latency: $V_1=1+100+100=201$
+\item TLB miss, page fault: $W_2=0.1 \times 0.01\times 0.01$,
+latency: $V_2=1+100+100+101+5000000=5000302$
+\item TLB hit, no page fault: $W_3=0.1 \times 0.99\times 0.99$,
+latency: $V_3=1+100=101$
+\item TLB hit, page fault: $W_4=0.1 \times 0.99\times 0.01$,
+latency: $V_4=1+100+101+5000000=5000202$
+\end{itemize}
+
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+%
+\documentclass[]{article}
+\usepackage{amsmath,amssymb}
+\usepackage{lmodern}
+\usepackage{mathpazo}
+\usepackage{ifxetex,ifluatex}
+\ifnum 0\ifxetex 1\fi\ifluatex 1\fi=0 % if pdftex
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math}
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{xcolor}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\hypersetup{
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+\urlstyle{same} % disable monospaced font for URLs
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\setcounter{secnumdepth}{-\maxdimen} % remove section numbering
+\ifluatex
+  \usepackage{selnolig}  % disable illegal ligatures
+\fi
+
+Since $|\frac{n^2-1}{n^2+1}-1|=|\frac{n^2-1-n^2-1}{n^2+1}|=|\frac{-2}{n^2+1}|=\frac2{n^2+1}$,
+the goal becomes $\frac2{n^2+1}<\epsilon$, in other words $\frac2\epsilon<n^2+1$ so $n^2>\frac2\epsilon$.
+Take $N=\frac2\epsilon$.
+\end{proof}
+\section{4.20}
+\subsection{4.20 (1)}
+\begin{proof}
+\begin{align*}
+\frac{n^3+5n^2+2}{2n^3+9}
+&=\frac{n^3(1+5n^{-1}+2n^{-3})}{n^3(2+9n^{-3})}\\
+&=\frac{1+5n^{-1}+2n^{-3}}{2+9n^{-3}}\\
+&\to\frac12~(\text{when}~n\to\infty)
+\end{align*}
+\end{proof}
+\subsection{4.20 (3)}
+\begin{proof}
+We start by finding two sequences:
+\begin{enumerate}
+\item Since $\sqrt{n+1}>\sqrt n$,
+$\sqrt n-\sqrt n<\sqrt{n+1}-\sqrt n$ while $\sqrt n-\sqrt n=0$
+\item Since $\lim_{n\to \infty}\frac1{\sqrt n}=0$:
+\begin{align*} \sqrt{n+1}-\sqrt n&=\frac{(\sqrt{n+1}-\sqrt n)(\sqrt{n+1}+\sqrt n)}{\sqrt{n+1}+\sqrt n}\\&=\frac{1}{\sqrt{n+1}+\sqrt n}\\&<\frac1{\sqrt n}
+\end{align*}
+\end{enumerate}
+There's a sequence larger than the original converges to $0$, and another smaller than the original converges to $0$. Hence the conclusion.
+\end{proof}
+\section{4.29}
+\subsection{4.29 (1)}
+\begin{proof}
+If we expand the def. of convergent sequences, this is essentially proving $||x_n-l|-0|=|x_n-l|-0$ which is obviously true.
+\end{proof}
+\subsection{4.29 (3) (i)}
+\begin{proof}
+For $n>0$, $f(n)=2^n$ is a monotonous function that increases. So it's not bounded above, thus diverges to $+\infty$.
+\end{proof}
+\end{document}
+
+So the interval for \(\theta\) is:
+
+Since $|x_{n+1}-x_n|=|f(x_{n})-f(x_{n-1})|\leq\alpha|x_n-x_{n-1}|$,
+so $|x_{n+1}-x_n|\leq \alpha^{n-1}|x_2-x_1|$ for $n>2$, hence $\angled{x_n}$ is Cauchy,
+thus converging, suppose it converges to $l$. Since $f(x_n)=x_{n+1}$ it is evident that $f(l)=l$ (a fixpoint).
+\end{document}
+
+
+\hwsec{(i) (d).}
+If $m=20$, then $g(x)=\frac{19 x+1}{20}$,
+still $g''(x)=0$, so it does not converge quadratically either.
+
+Comparison with Newton's method:
+the results are approximately the same for both functions,
+but the Newton's method converges faster.
+\end{document}
+
+
+\documentclass{amsart}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{amsthm}
+\usepackage{hyperref}
+\usepackage{mathpazo}
+\usepackage{tikz-cd}
+\usetikzlibrary{calc}
+\usetikzlibrary{decorations.pathmorphing}
+% A TikZ style for curved arrows of a fixed height, due to AndréC.
+\tikzset{curve/.style={settings={#1},to path={(\tikztostart)
+    .. controls ($(\tikztostart)!\pv{pos}!(\tikztotarget)!\pv{height}!270:(\tikztotarget)$)
+    and ($(\tikztostart)!1-\pv{pos}!(\tikztotarget)!\pv{height}!270:(\tikztotarget)$)
+    .. (\tikztotarget)\tikztonodes}},
+    settings/.code={\tikzset{quiver/.cd,#1}
+        \def\pv##1{\pgfkeysvalueof{/tikz/quiver/##1}}},
+    quiver/.cd,pos/.initial=0.35,height/.initial=0}
+% TikZ arrowhead/tail styles.
+\tikzset{tail reversed/.code={\pgfsetarrowsstart{tikzcd to}}}
+\tikzset{2tail/.code={\pgfsetarrowsstart{Implies[reversed]}}}
+\tikzset{2tail reversed/.code={\pgfsetarrowsstart{Implies}}}
+% TikZ arrow styles.
+\tikzset{no body/.style={/tikz/dash pattern=on 0 off 1mm}}
+\newcommand{\angled}[1]{\langle#1\rangle}
+\newtheorem*{remark}{Remark}
+\title{Math 401 Homework 9}
+\author{}
+\email{@psu.edu}
+\begin{document}
+\maketitle
+\tableofcontents
+\section{9.17}
+\subsection{9.17 (2)}
+For each real $\xi\in I$, consider $\angled{r_n}$ a sequence of rationals in $I$ that
+converges to $\xi$, then $f(r_n)\to f(\xi)$ when $n\to\infty$, while $f(r_n)=r_n^2$ for all $n$.
+Therefore, $f(\xi)=\xi^2$ the value $\angled{r_n}$ converging to.
+\subsection{9.17 (3)}
+It is known that polynormials of \textit{odd} degree diverge to $+\infty$ for $x\to+\infty$
+and diverge to $-\infty$ for $x\to-\infty$.
+By the mean value theorem, we can find $\xi\in(-\infty, +\infty)$ such that the polynormial
+equals $0$.
+\subsection{9.17 (4)}
+By theorem 9.12, for any $[a,b]\subset\mathbb R$, $f$ on $[a,b]$ attains a maximum and a minimum
+as $f$ is continuous on $\mathbb R$. Therefore, $f$ has a maximum and a minimum on $\mathbb R$.
+\subsection{9.17 (5)}
+By theorem 9.12, for any $[a,b]\subset\mathbb R$, $f$ on $[a,b]$ attains a maximum and a minimum
+as $f$ is continuous on $\mathbb R$. Iterating the process of finding $y\in I$ s.t. $|f(y)|=\frac12|f(x)|$
+for $x\in I$, we get a decreasing sequence converging to $0$.
+Since $f$ has a minimum on $I$, there exists $k\in I$ s.t. $f(k)=0$.
+\subsection{9.17 (6)}
+The continuity of $f$ can be derived from proposition 9.3 by replacing $\delta$ with $\epsilon\alpha$.
+
+\title{ Lab0 Report}
+\author{ \\ {@psu.edu}}
+
+So, $I$ is bounded, and thus compact.
+\end{proof}
+\end{document}
