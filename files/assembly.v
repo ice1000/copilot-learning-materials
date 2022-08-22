@@ -67,10 +67,6 @@ endmodule
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
-    assign (strong1, weak0) GSR = GSR_int;
-    assign (strong1, weak0) GTS = GTS_int;
-    assign (weak1, weak0) PRLD = PRLD_int;
-
 // "Instruction memory"
 module InstMem(input [31:0] pc, output reg [31:0] inst_out);
   reg [31:0] memory [0:63];
@@ -199,17 +195,6 @@ module testbench();
     end
 endmodule
 
-    reg JTAG_CAPTURE_GLBL;
-    reg JTAG_RESET_GLBL;
-    reg JTAG_SHIFT_GLBL;
-    reg JTAG_UPDATE_GLBL;
-    reg JTAG_RUNTEST_GLBL;
-
-    reg JTAG_SEL1_GLBL = 0;
-    reg JTAG_SEL2_GLBL = 0 ;
-    reg JTAG_SEL3_GLBL = 0;
-    reg JTAG_SEL4_GLBL = 0;
-
 module PC_Adder(
   input [31:0] pc,
   output reg [31:0] new
@@ -221,8 +206,6 @@ module PC_Adder(
     new <= pc + 32'd4;
   end
 endmodule
-
-module glbl ();
 
   // ===== Lab 4 =====
   wire mwreg, mm2reg, mwmem;
@@ -240,15 +223,6 @@ module Register_File(
 );
   reg [31:0] registers;
   integer i;
-
-    initial begin
-	GTS_int = 1'b1;
-	#(TOC_WIDTH)
-	GTS_int = 1'b0;
-    end
-
-    parameter ROC_WIDTH = 100000;
-    parameter TOC_WIDTH = 0;
 
   PC pc_dp(clk, add_rs, pc_r);
   PC_Adder adder_dp(pc_r, add_rs);
@@ -401,14 +375,6 @@ endmodule
   Immediate_Extender ie_dp(dinst, imm32);
   ID_EXE idexe_dp(clk, wreg, m2reg, wmem, aluc_dp, aluimm, dest_reg, qa_dp, qb_dp, imm32, ewreg, em2reg, ewmem, ealuc, ealuimm, edest_reg, eqa, eqb, eimm32);
 
-//--------   STARTUP Globals --------------
-    wire GSR;
-    wire GTS;
-    wire GWE;
-    wire PRLD;
-    tri1 p_up_tmp;
-    tri (weak1, strong0) PLL_LOCKG = p_up_tmp;
-
 module DataPath(
   input clk,
   output [31:0] pc_r,
@@ -501,16 +467,6 @@ module test_bench();
 endmodule
 
 
-    wire PROGB_GLBL;
-    wire CCLKO_GLBL;
-    wire FCSBO_GLBL;
-    wire [3:0] DO_GLBL;
-    wire [3:0] DI_GLBL;
-   
-    reg GSR_int;
-    reg GTS_int;
-    reg PRLD_int;
-
 module WriteBack_Mux(
   input wm2reg,
   input [31:0] wr,
@@ -602,13 +558,6 @@ endmodule
     end
   end
 
-//--------   JTAG Globals --------------
-    wire JTAG_TDO_GLBL;
-    wire JTAG_TCK_GLBL;
-    wire JTAG_TDI_GLBL;
-    wire JTAG_TMS_GLBL;
-    wire JTAG_TRST_GLBL;
-
 module Regrt_Multiplexer(
   input [31:0] dinst_out,
   input regrt,
@@ -651,18 +600,6 @@ module IF_ID(input clk, input [31:0] inst_out, output reg [31:0] dinst_out);
   end
 endmodule
 
-    initial begin
-	GSR_int = 1'b1;
-	PRLD_int = 1'b1;
-	#(ROC_WIDTH)
-	GSR_int = 1'b0;
-	PRLD_int = 1'b0;
-    end
-
-endmodule
-`endif
-
-
   wire [31:0] alu_out;
   wire [31:0] alul_out;
   ALU alu_mux(eqb, eimm32, ealuimm, alu_out);
@@ -671,11 +608,6 @@ endmodule
   MEMWB mb(clk, mwreg, mm2reg, mdestreg, mr, mdo, wwreg, wm2reg, wdestreg, wr, wdo);
 endmodule
 
-
-    reg JTAG_USER_TDO1_GLBL = 1'bz;
-    reg JTAG_USER_TDO2_GLBL = 1'bz;
-    reg JTAG_USER_TDO3_GLBL = 1'bz;
-    reg JTAG_USER_TDO4_GLBL = 1'bz;
 
   initial begin
     clk = 1;
@@ -772,11 +704,6 @@ endmodule
   input start, clk, clr;
   output reg busy, ready;
   output [4:0] count;
-
-// $Header: /devl/xcs/repo/env/Databases/CAEInterfaces/verunilibs/data/glbl.v,v 1.14 2010/10/28 20:44:00 fphillip Exp $
-`ifndef GLBL
-`define GLBL
-`timescale  1 ps / 1 ps
 
 `timescale 1ns / 1ps
 // Create Date: 2022/03/20 14:43:52
