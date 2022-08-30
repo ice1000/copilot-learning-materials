@@ -72,6 +72,8 @@ It won't go wrong according to our experiment *and* in that case the circuit jus
 |Rh.negative|12|25|10|9|56|
 |$X_{+j}$|90|110|68|32|300|
 
++
+
 Only $\{x\mid\norm{x}<1\}$ and $\{x\mid\norm{x}>1\}$ are connected in $\R^2$.
 
 CDF: $F_X(1)=\frac{37}{60}, F_X(2)=\frac{14}{15}, F_X(3)=1$.
@@ -770,6 +772,43 @@ $ADD~2~1=2~SUCC~1=(SUCC(SUCC(1)))=3$
 + $\overline{A\cup B}\subseteq\overline A \cup \overline B$: so $\overline A \cup \overline B$ contains $A$ and $B$ and is closed. Any closed set containing $A\cup B$ also contains $\overline{A\cup B}$, so $\overline{A \cup B}$ is contained by $\overline A \cup \overline B$.
 + $\overline{A\cup B}\supseteq\overline A\cup \overline B$: for $x\in \overline A \cup \overline B$, either $x\in \overline A$ which means for all closed set $O$ containing $A$, $x\in O$. There are less such sets containing $A \cup B$, so $x\in \overline{A\cup B}$.
 
++ Rigid motion: isometries over $\R^2$ or $\R^n$
+  + $T {x\choose y}={a~b\choose c~d}{x \choose y}+{e\choose f}$ where $A={a~b\choose c~d}$ is orthogonal ($A^T A=AA^T=I$ or $A\vec v\cdot A\vec u=\vec v\cdot \vec u$).
+  + Preserves distances.
++ Affine transformation
+  + $T {x\choose y}=A{x \choose y}+{e\choose f}$ where $\det(A)\ne0$ (this implies the matrix has an inverse).
+  + Preserves straight lines and parallel lines.
+  + Circles are no longer distinguished from ellipses.
++ Conformal transformation
+  + Preserves angles and orientations and lines but not curvatures or lengths.
+  + $A=vB$ for scalar $v$ and $B$ orthogonal.
++ They're all groups
++ For triangles:
+  + Euclidean transformation (group): congruent
+  + Conformal group: similar triangles
+  + Affine group: just triangles
++ Projective transformation
++ Geometry on the surface of a sphere
+  + Lines: circles whose centers are the middle of the sphere
+  + All lines intersect
++ $\R P^2$
+  + Parabola and hyperbola will close as ellipse
++ $\mathbb C P^1$: homeomorphic to sphere
+
++ Geometry of $\mathbb C$ as points in a plane
++ As polar axis, $\theta=\text{argument}(x)$, length is $|x|$
++ Closedness and topology
+  + $N_\delta(x)=\set{w\in\mathbb C \mid |x-w|<\delta}$ is an open disc around $x$ with radius $\delta$
+  + Metric space: it has triangle inequality
+  + Things: 
+    + $|x-c|=r$ for $c\in\mathbb C, r\in\R^+$: a circle centered at $c$.
+    + $az-b=0$ for $a, b\in\mathbb C$: a point
+    + $\ddot z=-i$ for $z$ a function over $t$ and $\ddot z=\frac{d^2z}{dt^2}$, suppose $z(t)=x(t)+iy(t)$, so $\ddot x=0$ and $\ddot y=-1$
+      + Let $x=x_0+v_1t$, $y=-\frac12 t^2+y_0+v_2t$
+    + Apollonius curves: $|z-c_1|=k|z-c_2|$ for $c_1, c_2\in\mathbb C$ and $k\in\R^+$, simplify $c_1=1$, $c_2=-1$.
+      + Solve by square both sides and by the above laws, $(z-1)\overline{(z-1)}=k^2(z+1)\overline{(z+1)}$, and by $\overline{a+b}=\overline a+\overline b$, this is $z\overline z-z-\overline z+1=k^2(z\overline z+z+\overline z+1)$ which is $(1-k^2)(x^2+y^2+1)-(1+k^2)(2x)=0$ which is a pair of families of circles.
+
+
 + | Current | Input | Next  | Output |
   | ------- | ----- | ----- | ------ |
   | START   | T     | $T_1$ | 0      |
@@ -821,6 +860,12 @@ By the properties of metric spaces, the Manhattan metric space satisfies $d(A,B)
 ## Problem 14.6 (i)
 
 ## Math 427 HW 14
+
++ Example: $I(y, y^2+xy+x^2)$, let $h=x+y$ and $f=x^2$, hence it's just $I(y, x^2)=I(y, x)+I(y, x)$
++ $I(f, g)=I(g, f)$
++ $I(f, g)\geq 1$ if both $f, g$ contains $0$
++ $I(f, g+hf)=I(f, g)$ (note that lhs is $f$, rhs contains $f$)
++ Intersection number is uniquely characterized by the properties of $I$.
 
 2. It is unambiguous. The equivalent unambiguous grammar is the same but replace `<n>` with the following rule:
 
@@ -910,6 +955,9 @@ Since every component of a compact subset is bounded, the subset as a whole is b
 
 ## Problem 13.4 (a)
 
++ Properties of $I(f, g)$
++ $k$ is the lowest degree of $x$ in $f(x)$ and we can factor $f(x)$ as $x^k p(x)$ for $p(x)\ne0$.
+
 | $J$  | $K$  | $Q^*$         |
 | ---- | ---- | ------------- |
 | 0    | 0    | $Q$           |
@@ -991,6 +1039,18 @@ The equation holds as in the final form, the LHS is positive ($e-2>0, e^r>0$) wh
 Actually, $s$ _can_ be pumped. Example 1.73 shows that $s$ cannot be pumped *in the language $0^n1^n$*, but if we change the language to $0^*1^*$, we can pump it.
 
 # Math 429 HW 8
+
+$$
+\begin{align*}
+z_1z_2&=(x_1+iy_1)(x_2+iy_2)\\
+&=x_1x_2-y_1iy_2+i(x_1y_2+x_2y_1)\\
+&=r_1r_2(\cos(\theta_1+\theta_2)+i\sin(\theta_1+\theta_2))\\
+&=r_1r_2\exp(i(\theta_1+\theta_2))
+\end{align*}
+\newcommand{\m}[1]{\begin{bmatrix}
+#1
+\end{bmatrix}}
+$$
 
 # Math 429 HW 1
 
@@ -1485,6 +1545,8 @@ and the two classifications are likely to be independent.
 
 (b): Taking the intersection of NFAs is similar to taking the intersection of DFAs, which is similar to taking the union of DFAs, which uses a cartesian product construction. So, the number of states will be $k_1\times 2^{k_2}$.
 
++ $\cos{2\theta}=Re(\cos{2\theta}+i\sin{2\theta})=Re((\exp{i\theta})^2)$
+
 1. Consider a finite set $X=\{a, b, c\}$,
    
    1. A relation $R:X\times X\to X$ where only $R(a,a), R(b, b), R(c, c), R(a, b), R(b, a), R(b, c), R(c, b)$ are $\text{True}$, the others are $\text{False}$.
@@ -1523,6 +1585,12 @@ All gates are closed, thus the capacitor discharges (if it's charged), but flows
 (a) It is known from homework 1 that the joint PDF $L(\theta)$ is $e^{-\sum^n_{i=1}\frac{X_i^2}{2{a_i \theta}}}\times (2\theta\pi)^{n/2}\times \prod^n_{i=1}a_i^{1/2}$, where we can drop everything except the factor $e^{-\sum^n_{i=1}\frac{X_i^2}{2{a_i \theta}}}$, which can be simplified further as $e^{-\frac1{2\theta}\sum^n_{i=1}\frac{X_i^2}{a_i}}$. Therefore $\fbox{$T=\sum^n_{i=1}\frac{X_i^2}{a_i}$}$ is a sufficient statistics. The MLE is a function out of this (also according to the computed MLE $\hat\theta=\fbox{$\frac1n\sum^n_{i=1}\frac{X_i^2}{a_i}$}$ in homework 1).
 
 (i) They are independent for having $0$ covariance.
+
++ Dot product: $a\cdot b=Re(\bar a b)$
++ Cross product: $a\times b=Im(\bar a b)=$ area of parallelogram with sign
++ Triangle area: $A=\frac12 Im(\bar a b)$ (signed)
++ Quadrilateral area: add up all areas of triangles (bc they're signed) $\frac12\sum^n_{i=1}Im(\overline {z_{i-1}} z_i)$
+  + Have to be in order
 
 ### 11.2
 
@@ -1600,6 +1668,8 @@ When $X=0,Y=0$:
 $Var(X_i)=$ $E(Var(X_i\mid I))+Var(E(X_i\mid I))$, where $E(Var(X_i\mid I))$ is similarly $\frac12\cdot 15^2+\frac12\cdot 6^2=130.5$.
 
 In case of prebase, replace "union" with "finite intersection" in the "if" part, and "only-if" part remains the same.
+
++ Show conjugate distributes: expand polynomials
 
 (e) $Var(X)=E(X^2)-E(X)^2=$ $(\int_0^1\int^y_0 x^2(3-3x)d(xy))-\frac1{16}=$ $\frac1{10}-\frac1{16}=\frac{6}{160}=\frac{3}{80}$. Thus $\sigma(X)=\sqrt{Var(X)}=$ $\frac14\sqrt{\frac3{5}}$.
 
@@ -1778,6 +1848,9 @@ Now, suppose $f(2)$ and $f(3)$ and $f(4)$ are all perfect squares, so like $f(2)
 Screenshot: ![](t-in-terms-of-d.png)
 
 ## Problem 12.10 (i)
+
++ $\cos\theta=\frac{\exp(i\theta)+\exp(-i\theta)}{2}$ for $\theta\in\R$
++ $\sin\theta=\frac{\exp(i\theta)-\exp(-i\theta)}{2}$ for $\theta\in\R$
 
 Suppose the waiting time of customer $i$ is $T_i$ and define $Y_i=1$ if $T_i>10$ and $0$ otherwise. So we need to compute $p=P(\sum^{100}_{i=1} Y_i \geq 50)$. Define $Y=\sum^{100}_{i=1} Y_i$.
 
@@ -1965,6 +2038,22 @@ So we need to find $E\left[\sum_{i=1}^5 I_i\right]$, by linearity it equals $\su
 
 Homework 1 Cmpsc 497
 
+$$\newcommand\m[1]{\begin{bmatrix}#1\end{bmatrix}}$$
+$$\newcommand\set[1]{\left\{#1\right\}}$$
++ $\mathbb C=\set{\m{x&-y\\y&x}\mid x, y\in\R}$
++ $i=\m{0&-1\\1&0}$ hence $i^2=-1$
++ Inverse & divisions
+  + Solve: let $zz^{-1}=1$, solve matrix equations
+  + $\m{x&-y\\y&x}=\cfrac{1}{x^2+y^2}\m{x&y\\-y&x}$
+  + Hence $(x+yi)^{-1}=\cfrac{x-yi}{x^2+y^2}$
+    + Check multiplication inverse!
+  + Cannot divide by zero
+  + Exercise: compute $\cfrac{2+3i}{1-2i}$ which is $(2+3i)(1-2i)^{-1}$.
+  + Conjugation: $\overline{x+yi}=x-yi$
+    + $x^{-1}=\cfrac{\overline x}{|x|^2}$ where $|x|^2=x\overline x$
+    + $Re(x)=\frac{x+\overline x}{2}$ as real part and $Im(x)=\frac{x-\overline x}{2i}$ as imaginary part
+    + $i^{-1}=i^3=-i$
+
 The if-and-only-if relation can be concluded directly from the fact that affine transformations are bijections (so they're injective).
 
 + (c) I did not consult any non-class materials.
@@ -2045,6 +2134,8 @@ Code:
 
 ## Exercise 8.14 (b)
 
+
+Hence $|\exp{i\theta}|=1$.
 
 19.10 is an example that set-square cannot but compass-and-ruler can construct.
 
@@ -2649,6 +2740,15 @@ module ff(
 
 (e) So $f_{X\mid Y}(x\mid y)=$ $\frac{f(x,y)}{f_Y(y)}=$ $\frac{\frac1x}{-\ln y}=\frac1{-x\ln y}$, where $0\leq y\leq x\leq 1$.
 
++ Algebraic planes
++ Intersections of algebraic curves
++ $f(x, y)$: a polynomial of two variables
+  + $\{(x, y)\mid x, y \in \R, f(x, y)=0 \}$
+  + Two straight lines: solve and get a point
+  + Two algebraic curves: $\{f(x, y)=0, g(x, y)=0\}$ intersect at finite number of points
+    + How many? Product of the degrees of the polynomials
+
+
 ## Problem 2 (c)
 
 And the test statistic is $\chi^2=\sum^n_{i=1}\frac{(Y_i-np_i)^2}{np_i}$ with degrees of freedom $3-1-1=1$, so:
@@ -2799,6 +2899,8 @@ $A$ is $\langle M_1,M_2\rangle$ such that $h(M_1)\cap h(M_2)\ne\empty$.
 
 + Cor: complement of $(PQ)$ is a union of two disjointed subsets of the plane
 
++ Euler's theorem
+
 + (a) $TX=\begin{bmatrix}1&0\\0&e^{2\pi i/8}\end{bmatrix}\begin{bmatrix}0&1\\1&0\end{bmatrix}=\begin{bmatrix}0&1\\e^{2\pi i/8}&0\end{bmatrix}$
 + (b) $THX=\begin{bmatrix}1&0\\0&e^{2\pi i/8}\end{bmatrix} \frac1{\sqrt2}\begin{bmatrix}1&1\\1&-1\end{bmatrix}\begin{bmatrix}0&1\\1&0\end{bmatrix}=\frac1{\sqrt2}\begin{bmatrix}1&1\\-e^{2\pi i/8}&e^{2\pi i/8}\end{bmatrix}$
 + (c) $THT=\begin{bmatrix}1&0\\0&e^{2\pi i/8}\end{bmatrix}\frac1{\sqrt2}\begin{bmatrix}1&1\\1&-1\end{bmatrix} \begin{bmatrix}1&0\\0&e^{2\pi i/8}\end{bmatrix}=\frac1{\sqrt2}\begin{bmatrix}1&e^{2\pi i/8}\\e^{2\pi i/8}&-i\end{bmatrix}$
@@ -2807,6 +2909,15 @@ $A$ is $\langle M_1,M_2\rangle$ such that $h(M_1)\cap h(M_2)\ne\empty$.
 First, $AF//ED\implies \measuredangle EAD\equiv \measuredangle EDA\implies AE=ED$.
 
    (a): $P(H_1)=P(F)P(H_1\mid F)+P(F^C)P(H_1\mid F^C)$ $=\frac12\frac12+\frac12\frac34=\frac58$.
+
++ $\arg(z_1z_2)=\arg z_1+\arg z_2$
++ Roots of unity
++ Complex solutions to $z^3=1$?
+  + $z=r\exp{-i\theta}$, so $r^3\exp{3i\theta}=1$
+  + Since $|r^3\exp{3i\theta}|=1$, $r=1$
+  + Rotate three times of $\theta$ gets $2\pi$, so $3\pi=2\theta$
++ In general, the $n$-th root of unity is $z$ s.t. $z^n=1$ (there will be $n$ solutions)
+
 
 # 5.20
 
@@ -2926,6 +3037,9 @@ $H$ is orthocenter $\implies AH\perp BC,CH\perp AB,BH\perp AC$ $\implies AC, AB,
 | 0    | 1    | 1    |       |               |
 
 To show $Cl_Y(A)= Cl_X(A)$, consider $X=\{1, 2, 3, 4\}$ with the topology $\{\empty, X, \{2, 3\}\}$, $Y=\{1\}$ with the subspace topology $\{\empty, Y\}$, and $A=\{1\}$. $Cl_X(A)=\{1, 4\}$ while $Cl_Y(A)=\{1\}$.
+
++ $\exp{(\pi\m{0&-1\\1&0})}=\m{-1&0\\0&-1}$
++ A half rotation is the same as flipping over the origin.
 
 6. ```
    <SNFloat>      -> <Float> <EExponent>
@@ -3246,6 +3360,18 @@ If: consider $B\sub Y$ open, then either $B\in \mathscr B$ or $B$ is a union of 
 
 Lemma. $Q'\in[P,Q),Q'\not=P,X\notin(P,Q)$, $\ang PQX$ and $\ang PQ'X$ have the same sign.
 
++ $I_0(f, g)$ intersection numbers of $0=(0, 0)$ of curves $f$ and $g$.
++ Base case: $g(x, y)=y$ so $g$ defines $x$-axis.
+  What's $I_0(f(x, y), y)$? Set $y=0$, hence $f(x, 0)=x^kp(x)$ for $k\geq0$ and $p(0)/ne0$. So $k$ is the mult of $x=0$ as zero of $f(x, 0)$ and $k=I(f(x, y), y)$.
++ ???
++ $I_0(f, g)$ is a natural number or $\infty$.
++ $I_0(f, y)\iff f(x, 0)$ has a zero at $x=0$
++ $I_0(y, y)=\infty$
++ Definition. For $p(x)$, $x_0$ is a zero of mult $k\iff p(x)=(x-x_0)^k q(x)\iff p(x_0)=0, \cdots, p^{(k-1)}(x_0)=0$
++ $I(x, y)=1$
++ $I(y, f\cdot h)=I(y, f) + I(y, h)$ (let $f(x, 0)=x^k p(x)$ and $h(x, 0)=x^m q(x)$)
++ $I(y, f(x, y)+yh(x, y))=I(y, f(x, y))$
+
 Look at my ✨beautiful✨ mspaint drawing!!
 
 When $X=1,Y=1$:
@@ -3307,6 +3433,9 @@ $$
 The results are the same. $\blacksquare$
 
 (d) $\mu_2=E(Y_1-Y_2)=0$.
+
++ $z=r\exp{i\theta}$ then $\bar z=r\exp{-i\theta}$ (flipping over the x-axis).
++ Conjugate inverse: $z^{-1}=\frac1r\exp{-i\theta}$
 
 + Absolute value (defined as $x$ and $-x$ for positive and negative values)
   + $|x|=0 \iff x=0$

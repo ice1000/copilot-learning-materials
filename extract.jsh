@@ -26,6 +26,8 @@ Files.walkFileTree(Paths.get("."), new SimpleFileVisitor<>() {
         .replaceAll("(Stat|Math|Cmpsc|Cmpen)\\d+", "")
         .replaceAll("\r", "")
         .replaceAll("Tesla[()\\w ]+Zhang", "")
+        .replaceAll("Zihui[()\\w ]+Xie", "")
+        .replaceAll("Yuanxiang[()\\w ]+Wang", "")
         .replaceAll("Yinsen[()\\w ]+Zhang", "");
     exts.get(ext).addAll(List.of(content.split("\\R\\R+")));
     return FileVisitResult.CONTINUE;

@@ -290,6 +290,23 @@ static block_info unpack(word_t word) {
   return info;
 }
 
+/*
+ * mm.c
+ *
+ * NAMES:
+ *
+ * The whole file is written by , , and .
+ * The whole project realizes functions such as malloc, free, realloc, calloc, and memalign.
+ * The project also includes a function to print the heap.
+ * We debug based on checkpoint files and gdb commands.
+ * Implementation method:
+ *  + Data structure: implicit list of blocks + explicit free list
+    + Alignment: 16 bytes, or 2 words
+    + Coalesces adjacent free blocks
+    + Check heap function validates the linked list and the consecutive-ness of the blocks
+    + Malloc splits block if the available block is very large, using a first-fit strategy
+ */
+
 /* sends the JBOD operation to the server (use the send_packet function) and receives 
 (use the recv_packet function) and processes the response. 
 
@@ -456,23 +473,6 @@ void cache_update(int disk_num, int block_num, const uint8_t *buf) {
 
 #include "mm.h"
 #include "memlib.h"
-
-/*
- * mm.c
- *
- * NAMES:
- *
- * The whole file is written by Zihui Xie, , and Yuanxiang Wang.
- * The whole project realizes functions such as malloc, free, realloc, calloc, and memalign.
- * The project also includes a function to print the heap.
- * We debug based on checkpoint files and gdb commands.
- * Implementation method:
- *  + Data structure: implicit list of blocks + explicit free list
-    + Alignment: 16 bytes, or 2 words
-    + Coalesces adjacent free blocks
-    + Check heap function validates the linked list and the consecutive-ness of the blocks
-    + Malloc splits block if the available block is very large, using a first-fit strategy
- */
 
 }
 
